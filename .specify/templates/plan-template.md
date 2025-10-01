@@ -34,20 +34,55 @@
 [Extract from feature spec: primary requirement + technical approach from research]
 
 ## Technical Context
-**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]  
-**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]  
-**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]  
-**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]  
-**Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
-**Project Type**: [single/web/mobile - determines source structure]  
-**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]  
-**Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]  
-**Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
+**Language/Version**: [e.g., Elixir 1.18.1, Python 3.11, or NEEDS CLARIFICATION]
+**Framework/Version**: [e.g., Phoenix 1.8.0, Phoenix LiveView 1.1.0, or NEEDS CLARIFICATION]
+**Primary Dependencies**: [e.g., Ecto 3.13, Req, Bandit 1.5, or NEEDS CLARIFICATION]
+**Storage**: [e.g., PostgreSQL with Ecto, ETS, files, or N/A]
+**Testing**: [e.g., ExUnit, Phoenix.LiveViewTest, LazyHTML, or NEEDS CLARIFICATION]
+**Target Platform**: [e.g., Web browser (LiveView), server deployment, or NEEDS CLARIFICATION]
+**Project Type**: [single/web/mobile - determines source structure; SudokuVersus is web]
+**Performance Goals**: [domain-specific, e.g., <100ms LiveView updates, 1000 concurrent users, or NEEDS CLARIFICATION]
+**Constraints**: [domain-specific, e.g., real-time multiplayer, <200ms latency, offline-capable, or NEEDS CLARIFICATION]
+**Scale/Scope**: [domain-specific, e.g., 10k concurrent games, 50k users, or NEEDS CLARIFICATION]
 
 ## Constitution Check
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+**Reference**: `.specify/memory/constitution.md`
+
+### Principle I: Phoenix v1.8 Best Practices
+- [ ] Uses LiveView for interactive features (no unnecessary JavaScript)
+- [ ] Templates use `~H` or `.html.heex` (no `~E`)
+- [ ] Forms use `to_form/2` pattern (no raw changesets in templates)
+- [ ] Navigation uses `<.link navigate={}>` / `<.link patch={}>` (no deprecated functions)
+- [ ] Collections use LiveView streams (no memory-intensive list assigns)
+- [ ] Ecto associations preloaded before template access (no N+1 queries)
+
+### Principle II: Elixir 1.18 Idiomatic Code
+- [ ] List access uses `Enum.at/2` or pattern matching (no `list[i]` syntax)
+- [ ] Block expression results properly bound (no lost rebindings in if/case)
+- [ ] Struct field access uses dot notation or proper APIs (no map access syntax)
+- [ ] No `String.to_atom/1` on user input (memory leak prevention)
+- [ ] Predicate functions named with `?` suffix (not `is_` prefix)
+
+### Principle III: Test-First Development
+- [ ] Tests planned before implementation (TDD approach documented)
+- [ ] LiveView tests use `element/2`, `has_element/2` (no raw HTML assertions)
+- [ ] Key template elements have unique DOM IDs for testing
+- [ ] `mix precommit` will pass (compilation, format, tests)
+
+### Principle IV: LiveView-Centric Architecture
+- [ ] Interactive UI driven by LiveView (JavaScript only when necessary)
+- [ ] JS hooks (if any) in `assets/js/`, not inline (no `<script>` tags in HEEx)
+- [ ] Stream usage follows proper patterns (phx-update="stream", proper IDs)
+- [ ] Empty states and counts tracked separately (streams don't support these)
+
+### Principle V: Clean & Modular Design
+- [ ] Clear separation: contexts (logic), schemas (data), LiveViews (presentation)
+- [ ] HTTP requests use `Req` library (not :httpoison, :tesla, :httpc)
+- [ ] Complex logic extracted to context functions (focused LiveView callbacks)
+- [ ] Router scopes properly aliased (no redundant module prefixes)
+- [ ] YAGNI followed (start simple, add complexity only when needed)
 
 ## Project Structure
 
@@ -66,47 +101,70 @@ specs/[###-feature]/
 <!--
   ACTION REQUIRED: Replace the placeholder tree below with the concrete layout
   for this feature. Delete unused options and expand the chosen structure with
-  real paths (e.g., apps/admin, packages/something). The delivered plan must
-  not include Option labels.
+  real paths. The delivered plan must not include Option labels.
 -->
 ```
-# [REMOVE IF UNUSED] Option 1: Single project (DEFAULT)
-src/
-├── models/
-├── services/
-├── cli/
-└── lib/
+# [REMOVE IF UNUSED] Option 1: Phoenix/Elixir Web Application (DEFAULT for SudokuVersus)
+lib/
+├── sudoku_versus/           # Business logic contexts
+│   ├── context_name/
+│   │   ├── schema_name.ex   # Ecto schemas
+│   │   └── ...
+│   └── ...
+├── sudoku_versus_web/       # Web interface layer
+│   ├── live/                # LiveView modules
+│   │   └── feature_live.ex
+│   ├── components/          # Reusable components
+│   │   └── core_components.ex
+│   ├── controllers/         # Traditional controllers (if needed)
+│   └── ...
+└── sudoku_versus.ex         # Main application file
 
-tests/
-├── contract/
-├── integration/
-└── unit/
+test/
+├── sudoku_versus/           # Context tests
+│   └── context_name_test.exs
+├── sudoku_versus_web/       # LiveView & controller tests
+│   ├── live/
+│   │   └── feature_live_test.exs
+│   └── ...
+└── support/                 # Test helpers
 
-# [REMOVE IF UNUSED] Option 2: Web application (when "frontend" + "backend" detected)
-backend/
-├── src/
-│   ├── models/
-│   ├── services/
-│   └── api/
-└── tests/
+assets/                      # Frontend assets
+├── js/
+│   ├── app.js
+│   └── hooks/               # LiveView JS hooks
+├── css/
+│   └── app.css
+└── vendor/
 
-frontend/
-├── src/
-│   ├── components/
-│   ├── pages/
-│   └── services/
-└── tests/
+priv/
+├── repo/
+│   ├── migrations/          # Database migrations
+│   └── seeds.exs
+└── static/                  # Compiled assets
 
-# [REMOVE IF UNUSED] Option 3: Mobile + API (when "iOS/Android" detected)
-api/
-└── [same as backend above]
+# [REMOVE IF UNUSED] Option 2: Umbrella Application (for complex multi-app projects)
+apps/
+├── app_name/
+│   ├── lib/
+│   └── test/
+├── app_name_web/
+│   ├── lib/
+│   └── test/
+└── ...
 
-ios/ or android/
-└── [platform-specific structure: feature modules, UI flows, platform tests]
+# [REMOVE IF UNUSED] Option 3: CLI/Script Project (non-web Elixir)
+lib/
+├── module_name/
+│   ├── core.ex
+│   └── cli.ex
+└── module_name.ex
+
+test/
+└── module_name_test.exs
 ```
 
-**Structure Decision**: [Document the selected structure and reference the real
-directories captured above]
+**Structure Decision**: [Document the selected structure. For SudokuVersus, use Option 1: Phoenix/Elixir Web Application with contexts in `lib/sudoku_versus/`, web layer in `lib/sudoku_versus_web/`, and tests mirroring the lib structure.]
 
 ## Phase 0: Outline & Research
 1. **Extract unknowns from Technical Context** above:
@@ -169,12 +227,12 @@ directories captured above]
 - Load `.specify/templates/tasks-template.md` as base
 - Generate tasks from Phase 1 design docs (contracts, data model, quickstart)
 - Each contract → contract test task [P]
-- Each entity → model creation task [P] 
+- Each entity → model creation task [P]
 - Each user story → integration test task
 - Implementation tasks to make tests pass
 
 **Ordering Strategy**:
-- TDD order: Tests before implementation 
+- TDD order: Tests before implementation
 - Dependency order: Models before services before UI
 - Mark [P] for parallel execution (independent files)
 
@@ -185,8 +243,8 @@ directories captured above]
 ## Phase 3+: Future Implementation
 *These phases are beyond the scope of the /plan command*
 
-**Phase 3**: Task execution (/tasks command creates tasks.md)  
-**Phase 4**: Implementation (execute tasks.md following constitutional principles)  
+**Phase 3**: Task execution (/tasks command creates tasks.md)
+**Phase 4**: Implementation (execute tasks.md following constitutional principles)
 **Phase 5**: Validation (run tests, execute quickstart.md, performance validation)
 
 ## Complexity Tracking
