@@ -59,7 +59,7 @@ When creating this spec from a user prompt:
 **As a player**, I want to create or join multiplayer Sudoku games where I can collaborate with others in real-time to solve puzzles of varying difficulty levels, earn points based on my performance, and see my ranking compared to other players.
 
 **Game Creation Flow:**
-A player creates a new Sudoku room by selecting the grid size (9x9 to 100x100) and difficulty level (fácil, media, difícil, experto, maestra, extrema). The system generates a valid Sudoku puzzle and opens the room for other players to join. A game timer starts when the first move is made.
+A player creates a new Sudoku room by providing a room name (up to 30 characters, supporting alphanumeric characters and emojis), selecting the grid size (9x9 to 100x100), and choosing a difficulty level (fácil, media, difícil, experto, maestra, extrema). The system validates the room name, generates a valid Sudoku puzzle, and opens the room for other players to join. A game timer starts when the first move is made.
 
 **Playing Flow:**
 Multiple players join the room and can see the puzzle in real-time. Each player places numbers in empty cells. When a player places a correct number, they earn points and the change is immediately visible to all players. If a player makes an incorrect move, they are penalized with a 10-second cooldown before they can make another move. The game continues until all cells are correctly filled.
@@ -69,19 +69,21 @@ Once the Sudoku is completed, players can view a timeline replay showing every m
 
 ### Acceptance Scenarios
 
-1. **Given** a logged-in player on the home screen, **When** they click "Create Game" and select grid size "9x9" and difficulty "media", **Then** a new game room is created with a unique ID, a valid Sudoku puzzle is generated, and the player is shown the game board with 0 other players online
+1. **Given** a logged-in player on the home screen, **When** they click "Create Game", enter room name "🎮 Mi Sala Epic", select grid size "9x9" and difficulty "media", **Then** a new game room is created with the provided name, a unique ID, a valid Sudoku puzzle is generated, and the player is shown the game board with 0 other players online
 
-2. **Given** an open game room with an incomplete puzzle, **When** a player joins via the room list, **Then** they see the current game state with all previously placed numbers, the list of online players, and the game timer
+2. **Given** a player creating a new game, **When** they enter a room name with 31 characters or invalid characters, **Then** the system displays a validation error and prevents room creation
 
-3. **Given** a player viewing an empty cell, **When** they select a number and submit it, **Then** the system validates the move within 100ms and either (a) accepts it, updates the board for all players, awards points, and shows success feedback, or (b) rejects it, applies a 10-second penalty, and shows error feedback
+3. **Given** an open game room with an incomplete puzzle, **When** a player joins via the room list, **Then** they see the room name, current game state with all previously placed numbers, the list of online players, and the game timer
 
-4. **Given** a player who made an incorrect move, **When** they try to make another move within 10 seconds, **Then** the system prevents the move and displays remaining cooldown time
+4. **Given** a player viewing an empty cell, **When** they select a number and submit it, **Then** the system validates the move within 100ms and either (a) accepts it, updates the board for all players, awards points, and shows success feedback, or (b) rejects it, applies a 10-second penalty, and shows error feedback
 
-5. **Given** a game with all cells correctly filled, **When** the last correct number is placed, **Then** the game is marked as completed, final scores are calculated for all players, the game becomes read-only, and the timeline replay becomes available
+5. **Given** a player who made an incorrect move, **When** they try to make another move within 10 seconds, **Then** the system prevents the move and displays remaining cooldown time
 
-6. **Given** a completed game, **When** a player opens the timeline replay, **Then** they see a progress bar and can scrub through the timeline to see each move in chronological order with player attribution
+6. **Given** a game with all cells correctly filled, **When** the last correct number is placed, **Then** the game is marked as completed, final scores are calculated for all players, the game becomes read-only, and the timeline replay becomes available
 
-7. **Given** multiple completed games, **When** a player views the rankings page, **Then** they see leaderboards showing: total player points, points per room, total errors, errors per room, and number of games played
+7. **Given** a completed game, **When** a player opens the timeline replay, **Then** they see the room name, a progress bar, and can scrub through the timeline to see each move in chronological order with player attribution
+
+8. **Given** multiple completed games, **When** a player views the rankings page, **Then** they see leaderboards showing: total player points, points per room, total errors, errors per room, and number of games played
 
 ### Edge Cases
 
@@ -106,68 +108,77 @@ Once the Sudoku is completed, players can view a timeline replay showing every m
 - What happens when **a player creates a 100x100 grid**?
   - The system must handle the increased data size. Puzzle generation may take longer (loading indicator shown). Rendering optimizations ensure the board remains interactive.
 
+- What happens when **a player uses special Unicode characters or emojis in the room name**?
+  - The system accepts all valid Unicode characters including emojis as long as the total character count (not byte count) is ≤30. Display rendering handles proper emoji presentation across different devices.
+
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
 
 #### Game Creation & Configuration
-- **FR-001**: System MUST allow authenticated players to create new Sudoku game rooms
+- **FR-001**: System MUST allow authenticated players to create new Sudoku game rooms with a custom room name
+- **FR-001a**: System MUST validate that room names contain only alphanumeric characters (A-Z, a-z, 0-9) and emojis
+- **FR-001b**: System MUST enforce a maximum room name length of 30 characters
+- **FR-001c**: System MUST display validation errors when room names exceed 30 characters or contain invalid characters
 - **FR-002**: System MUST support configurable grid sizes from 9x9 to 100x100 cells
 - **FR-003**: System MUST support six difficulty levels: fácil, media, difícil, experto, maestra, extrema
 - **FR-004**: System MUST generate valid, solvable Sudoku puzzles for the selected configuration
 - **FR-005**: System MUST assign a unique identifier to each game room
 - **FR-006**: System MUST initialize a game timer that starts when the first move is made
+- **FR-007**: System MUST display the room name in the game interface, room lists, and replay timeline
 
 #### Real-Time Multiplayer
-- **FR-007**: System MUST allow multiple players to join an incomplete game room
-- **FR-008**: System MUST broadcast all valid moves to all connected players in real-time (< 200ms latency)
-- **FR-009**: System MUST display the number of currently online players in each game room
-- **FR-010**: System MUST prevent players from joining completed games (except as spectators)
-- **FR-011**: System MUST maintain connection resilience and handle disconnections gracefully
-- **FR-012**: System MUST preserve player state for 30 seconds after disconnection for reconnection attempts
+- **FR-008**: System MUST allow multiple players to join an incomplete game room
+- **FR-009**: System MUST broadcast all valid moves to all connected players in real-time (< 200ms latency)
+- **FR-010**: System MUST display the number of currently online players in each game room
+- **FR-011**: System MUST prevent players from joining completed games (except as spectators)
+- **FR-012**: System MUST maintain connection resilience and handle disconnections gracefully
+- **FR-013**: System MUST preserve player state for 30 seconds after disconnection for reconnection attempts
 
 #### Move Validation & Gameplay
-- **FR-013**: System MUST validate each move to determine if the placed number is correct
-- **FR-014**: System MUST respond to move validation within 100ms
-- **FR-015**: System MUST persist every move with: player ID, cell position, number placed, timestamp, correct/incorrect status
-- **FR-016**: System MUST apply a 10-second cooldown penalty to players who make incorrect moves
-- **FR-017**: System MUST prevent penalized players from making moves until their cooldown expires
-- **FR-018**: System MUST display the remaining cooldown time to penalized players
-- **FR-019**: System MUST handle concurrent move attempts using optimistic concurrency control
-- **FR-020**: System MUST mark a game as completed when all cells are correctly filled
+- **FR-014**: System MUST validate each move to determine if the placed number is correct
+- **FR-015**: System MUST respond to move validation within 100ms
+- **FR-016**: System MUST persist every move with: player ID, cell position, number placed, timestamp, correct/incorrect status
+- **FR-017**: System MUST apply a 10-second cooldown penalty to players who make incorrect moves
+- **FR-018**: System MUST prevent penalized players from making moves until their cooldown expires
+- **FR-019**: System MUST display the remaining cooldown time to penalized players
+- **FR-020**: System MUST handle concurrent move attempts using optimistic concurrency control
+- **FR-021**: System MUST mark a game as completed when all cells are correctly filled
 
 #### Scoring System
-- **FR-021**: System MUST award points to players for each correct number placed
-- **FR-022**: System MUST calculate scores using the formula:
+- **FR-022**: System MUST award points to players for each correct number placed
+- **FR-023**: System MUST calculate scores using the formula:
   `puntos_base × porcentaje_correcto + nivel_bonus + factor_tiempo × segundos_restantes - errores × penalidad_por_error`, capped by `cap_por_dificultad`
-- **FR-023**: System MUST use difficulty-specific constants for scoring:
+- **FR-024**: System MUST use difficulty-specific constants for scoring:
   - `nivel_bonus`: fácil=100, media=200, difícil=300, experto=400, maestra=450, extrema=500
   - `tiempo_limite`: fácil=180s, media=300s, difícil=480s, experto=600s, maestra=720s, extrema=900s
   - `factor_tiempo`: 1 point per second remaining
   - `penalidad_por_error`: 5 points per error
   - `cap_por_dificultad`: fácil=1000, media=2000, difícil=4000, experto=6000, maestra=8000, extrema=10000
-- **FR-024**: System MUST display current score in real-time as players make moves
-- **FR-025**: System MUST NOT deduct points for incorrect moves (penalty is cooldown only)
+- **FR-025**: System MUST display current score in real-time as players make moves
+- **FR-026**: System MUST NOT deduct points for incorrect moves (penalty is cooldown only)
 
 #### Timeline Replay
-- **FR-026**: System MUST record all moves in chronological order for completed games
-- **FR-027**: System MUST provide a timeline replay interface with a scrubbing progress bar
-- **FR-028**: System MUST display each move with: player name/ID, cell position, number, timestamp, and outcome
-- **FR-029**: System MUST allow players to play, pause, and scrub through the timeline
-- **FR-030**: System MUST show the board state as it evolves during replay
+- **FR-027**: System MUST record all moves in chronological order for completed games
+- **FR-028**: System MUST provide a timeline replay interface with a scrubbing progress bar
+- **FR-029**: System MUST display each move with: player name/ID, cell position, number, timestamp, and outcome
+- **FR-030**: System MUST allow players to play, pause, and scrub through the timeline
+- **FR-031**: System MUST show the board state as it evolves during replay
+- **FR-032**: System MUST display the room name in the timeline replay interface
 
 #### Rankings & Statistics
-- **FR-031**: System MUST maintain a global leaderboard showing player rankings by total points
-- **FR-032**: System MUST display per-room leaderboards showing player scores for that specific game
-- **FR-033**: System MUST track and display total error count per player across all games
-- **FR-034**: System MUST track and display error count per player per room
-- **FR-035**: System MUST display the number of games played by each player
-- **FR-036**: System MUST update rankings in near real-time as games complete
+- **FR-033**: System MUST maintain a global leaderboard showing player rankings by total points
+- **FR-034**: System MUST display per-room leaderboards showing player scores and room names for specific games
+- **FR-035**: System MUST track and display total error count per player across all games
+- **FR-036**: System MUST track and display error count per player per room
+- **FR-037**: System MUST display the number of games played by each player
+- **FR-038**: System MUST update rankings in near real-time as games complete
 
 #### Game Room Visibility
-- **FR-037**: System MUST display the current number of online players in each room
-- **FR-038**: System MUST display the number of players currently under penalty (cooldown active)
-- **FR-039**: System MUST display total errors committed in the current room
+- **FR-039**: System MUST display the room name in the game interface header
+- **FR-040**: System MUST display the current number of online players in each room
+- **FR-041**: System MUST display the number of players currently under penalty (cooldown active)
+- **FR-042**: System MUST display total errors committed in the current room
 
 ### Performance Requirements
 - **PR-001**: System MUST validate moves within 100ms under normal load
@@ -186,7 +197,7 @@ Once the Sudoku is completed, players can view a timeline replay showing every m
 
 - **Player**: Represents a user account. Attributes: unique ID, username/display name, total points, total errors, games played, registration date
 
-- **Game Room**: Represents a single Sudoku game instance. Attributes: unique ID, grid size (9-100), difficulty level, creation timestamp, completion timestamp, creator player ID, game status (waiting/in-progress/completed), timer value
+- **Game Room**: Represents a single Sudoku game instance. Attributes: unique ID, room name (max 30 characters, alphanumeric + emojis), grid size (9-100), difficulty level, creation timestamp, completion timestamp, creator player ID, game status (waiting/in-progress/completed), timer value
 
 - **Puzzle**: Represents the Sudoku puzzle configuration. Attributes: grid size, initial cell values (problem definition), solution (complete correct state), difficulty level
 
@@ -235,7 +246,7 @@ Once the Sudoku is completed, players can view a timeline replay showing every m
 - [x] Key concepts extracted
 - [x] Ambiguities marked (none found - specification is complete)
 - [x] User scenarios defined
-- [x] Requirements generated (39 functional requirements + performance & reliability)
+- [x] Requirements generated (42 functional requirements + performance & reliability)
 - [x] Entities identified (7 key entities)
 - [x] Review checklist passed
 
@@ -244,6 +255,8 @@ Once the Sudoku is completed, players can view a timeline replay showing every m
 ## Summary
 
 This specification defines a comprehensive MMO Sudoku multiplayer game where players collaborate in real-time to solve puzzles ranging from 9x9 to 100x100 grids across six difficulty levels. The system features:
+
+- **Custom room names** with support for alphanumeric characters and emojis (max 30 characters)
 
 - **Real-time multiplayer collaboration** with sub-200ms latency
 - **Intelligent penalty system** (10-second cooldown for incorrect moves)
