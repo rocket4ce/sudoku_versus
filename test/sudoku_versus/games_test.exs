@@ -255,7 +255,7 @@ defmodule SudokuVersus.GamesTest do
       assert is_binary(move.player.username)
     end
 
-    test "limits to 50 moves", %{room: room, puzzle: puzzle} do
+    test "limits to 50 moves", %{room: room} do
       # This test assumes we can create 50+ moves somehow
       # For now just verify limit parameter exists
       moves = Games.get_room_moves(room.id, limit: 2)

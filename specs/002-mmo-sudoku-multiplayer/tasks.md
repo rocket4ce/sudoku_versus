@@ -14,90 +14,90 @@
 ## Phase 3.1: Setup & Infrastructure
 
 ### Database & Configuration
-- [ ] **T001** Create database migration for users table
+- [X] **T001** Create database migration for users table
   - **File**: `priv/repo/migrations/YYYYMMDDHHMMSS_create_users.exs`
   - **Details**: Binary ID primary key, username (unique), email (unique), password_hash, is_guest, oauth_provider, oauth_provider_id (unique composite), statistics fields (total_games_played, total_puzzles_completed, total_points_earned, highest_score), timestamps
   - **Indexes**: username, email, oauth_provider+oauth_provider_id, total_points_earned DESC
 
-- [ ] **T002** Create database migration for puzzles table
+- [X] **T002** Create database migration for puzzles table
   - **File**: `priv/repo/migrations/YYYYMMDDHHMMSS_create_puzzles.exs`
   - **Details**: Binary ID primary key, difficulty enum (easy/medium/hard/expert), grid (array of arrays), solution (array of arrays), clues_count integer, timestamps
   - **Indexes**: difficulty
   - **Check Constraints**: clues_count >= 22 AND clues_count <= 45
 
-- [ ] **T003** Create database migration for game_rooms table
+- [X] **T003** Create database migration for game_rooms table
   - **File**: `priv/repo/migrations/YYYYMMDDHHMMSS_create_game_rooms.exs`
   - **Details**: Binary ID primary key, name string, status enum (active/completed/archived), max_players integer, visibility enum (public/private), started_at, completed_at, current_players_count, total_moves_count, creator_id FK to users, puzzle_id FK to puzzles, timestamps
   - **Indexes**: status, inserted_at DESC, creator_id
   - **Dependencies**: T001, T002
 
-- [ ] **T004** Create database migration for player_sessions table
+- [X] **T004** Create database migration for player_sessions table
   - **File**: `priv/repo/migrations/YYYYMMDDHHMMSS_create_player_sessions.exs`
   - **Details**: Binary ID primary key, started_at, last_activity_at, completed_at, is_active boolean, scoring fields (current_score, current_streak, longest_streak, correct_moves_count, incorrect_moves_count, cells_filled, completed_puzzle), player_id FK to users, game_room_id FK to game_rooms, timestamps
   - **Indexes**: player_id+game_room_id (unique), game_room_id, is_active
   - **Dependencies**: T001, T003
 
-- [ ] **T005** Create database migration for moves table
+- [X] **T005** Create database migration for moves table
   - **File**: `priv/repo/migrations/YYYYMMDDHHMMSS_create_moves.exs`
   - **Details**: Binary ID primary key, row integer (0-8), col integer (0-8), value integer (1-9), is_correct boolean, submitted_at, points_earned, player_id FK to users, game_room_id FK to game_rooms, player_session_id FK to player_sessions, timestamps
   - **Indexes**: game_room_id+inserted_at DESC, player_session_id, player_id
   - **Check Constraints**: row >= 0 AND row < 9, col >= 0 AND col < 9, value >= 1 AND value <= 9
   - **Dependencies**: T001, T003, T004
 
-- [ ] **T006** Create database migration for score_records table
+- [X] **T006** Create database migration for score_records table
   - **File**: `priv/repo/migrations/YYYYMMDDHHMMSS_create_score_records.exs`
   - **Details**: Binary ID primary key, final_score, time_elapsed_seconds, correct_moves, incorrect_moves, longest_streak, completed_puzzle boolean, difficulty enum, recorded_at, player_id FK to users, game_room_id FK to game_rooms, timestamps
   - **Indexes**: player_id+final_score DESC, difficulty+final_score DESC, recorded_at DESC
   - **Dependencies**: T001, T003
 
-- [ ] **T007** Create database migration for leaderboard_entries materialized view
+- [X] **T007** Create database migration for leaderboard_entries materialized view
   - **File**: `priv/repo/migrations/YYYYMMDDHHMMSS_create_leaderboard_entries.exs`
   - **Details**: Materialized view with player_id, username, display_name, avatar_url, total_score, games_completed, average_score, highest_single_score, rank, difficulty (including 'all' aggregate)
   - **Indexes**: player_id+difficulty (unique)
   - **Dependencies**: T001, T006
 
 ### Context & Schema Setup
-- [ ] **T008** [P] Create User schema
+- [X] **T008** [P] Create User schema
   - **File**: `lib/sudoku_versus/accounts/user.ex`
   - **Details**: Ecto schema matching T001 migration, guest_changeset/2, registration_changeset/2, oauth_changeset/2, put_password_hash/1 private function
   - **Dependencies**: T001
 
-- [ ] **T009** [P] Create Puzzle schema
+- [X] **T009** [P] Create Puzzle schema
   - **File**: `lib/sudoku_versus/games/puzzle.ex`
   - **Details**: Ecto schema matching T002 migration, changeset/2, validate_grid_structure/1, validate_clues_count/1
   - **Dependencies**: T002
 
-- [ ] **T010** [P] Create GameRoom schema
+- [X] **T010** [P] Create GameRoom schema
   - **File**: `lib/sudoku_versus/games/game_room.ex`
   - **Details**: Ecto schema matching T003 migration, changeset/2, status_changeset/2, validate_name_format/1 (supports emojis, max 30 chars)
   - **Dependencies**: T003
 
-- [ ] **T011** [P] Create PlayerSession schema
+- [X] **T011** [P] Create PlayerSession schema
   - **File**: `lib/sudoku_versus/games/player_session.ex`
   - **Details**: Ecto schema matching T004 migration, changeset/2, update_stats_changeset/2, complete_changeset/1
   - **Dependencies**: T004
 
-- [ ] **T012** [P] Create Move schema
+- [X] **T012** [P] Create Move schema
   - **File**: `lib/sudoku_versus/games/move.ex`
   - **Details**: Ecto schema matching T005 migration, changeset/2 with validation
   - **Dependencies**: T005
 
-- [ ] **T013** [P] Create ScoreRecord schema
+- [X] **T013** [P] Create ScoreRecord schema
   - **File**: `lib/sudoku_versus/games/score_record.ex`
   - **Details**: Ecto schema matching T006 migration, changeset/2
   - **Dependencies**: T006
 
-- [ ] **T014** [P] Create LeaderboardEntry schema (read-only)
+- [X] **T014** [P] Create LeaderboardEntry schema (read-only)
   - **File**: `lib/sudoku_versus/games/leaderboard_entry.ex`
   - **Details**: Read-only Ecto schema matching T007 materialized view, no changesets needed
   - **Dependencies**: T007
 
 ### Phoenix Setup
-- [ ] **T015** [P] Create Phoenix.Presence module
+- [X] **T015** [P] Create Phoenix.Presence module
   - **File**: `lib/sudoku_versus_web/presence.ex`
   - **Details**: Use Phoenix.Presence with pubsub_server: SudokuVersus.PubSub for player tracking per room
 
-- [ ] **T016** [P] Update application.ex to start Presence
+- [X] **T016** [P] Update application.ex to start Presence
   - **File**: `lib/sudoku_versus/application.ex`
   - **Details**: Add SudokuVersusWeb.Presence to supervision tree
 
@@ -191,58 +191,58 @@
 ## Phase 3.3: Core Implementation (ONLY after tests are failing)
 
 ### Accounts Context
-- [ ] **T029** [P] Implement Accounts context module
+- [X] **T029** [P] Implement Accounts context module
   - **File**: `lib/sudoku_versus/accounts.ex`
   - **Details**: Implement create_guest_user/1, register_user/1, get_user_by_username/1, authenticate_user/2
   - **Verify**: T017 tests now pass
   - **Dependencies**: T008, T017
 
-- [ ] **T030** [P] Implement OAuth module with Req
+- [X] **T030** [P] Implement OAuth module with Req
   - **File**: `lib/sudoku_versus/accounts/oauth.ex`
   - **Details**: Implement authorize_url/1, fetch_token/2, fetch_user_info/2 for Google and GitHub using Req library
   - **Verify**: T021 tests now pass
   - **Dependencies**: T017, T021
 
-- [ ] **T031** Implement find_or_create_oauth_user/2 in Accounts context
+- [X] **T031** Implement find_or_create_oauth_user/2 in Accounts context
   - **File**: `lib/sudoku_versus/accounts.ex`
   - **Details**: Create or update user from OAuth provider data
   - **Verify**: T021 OAuth callback tests pass
   - **Dependencies**: T029, T030
 
 ### Games Context - Puzzle Generation
-- [ ] **T032** [P] Implement PuzzleGenerator module
+- [X] **T032** [P] Implement PuzzleGenerator module
   - **File**: `lib/sudoku_versus/games/puzzle_generator.ex`
   - **Details**: Implement generate_puzzle/1 with backtracking algorithm, validate_move?/4, cache_solution/1
   - **Verify**: T018 tests now pass
   - **Dependencies**: T009, T018
   - **Note**: Include initialize_empty_grid/0, fill_diagonal_boxes/1, solve_recursive/1, remove_numbers/2, clues_for_difficulty/1
 
-- [ ] **T033** [P] Implement Scorer module
+- [X] **T033** [P] Implement Scorer module
   - **File**: `lib/sudoku_versus/games/scorer.ex`
   - **Details**: Implement calculate_score/3 with base points (500-5000 by difficulty), streak multipliers (1.0-2.0), speed bonuses, penalties
   - **Verify**: T019 tests now pass
   - **Dependencies**: T011, T019
 
 ### Games Context - Room Management
-- [ ] **T034** Implement Games context base functions
+- [X] **T034** Implement Games context base functions
   - **File**: `lib/sudoku_versus/games.ex`
   - **Details**: Implement create_game_room/1, list_active_rooms/0, get_game_room/1 with preloading
   - **Verify**: T020 room creation/listing tests pass
   - **Dependencies**: T010, T020
 
-- [ ] **T035** Implement join_room/2 and leave_room/2
+- [X] **T035** Implement join_room/2 and leave_room/2
   - **File**: `lib/sudoku_versus/games.ex`
   - **Details**: Create player_session on join, update session on leave, increment/decrement room player counts
   - **Verify**: T020 join/leave tests pass
   - **Dependencies**: T011, T034
 
-- [ ] **T036** Implement record_move/3 with validation
+- [X] **T036** Implement record_move/3 with validation
   - **File**: `lib/sudoku_versus/games.ex`
   - **Details**: Validate move against puzzle solution, record in moves table, update player_session stats, calculate and apply score
   - **Verify**: T020 move recording tests pass
   - **Dependencies**: T012, T032, T033, T035
 
-- [ ] **T037** Implement get_room_moves/2 for history
+- [X] **T037** Implement get_room_moves/2 for history
   - **File**: `lib/sudoku_versus/games.ex`
   - **Details**: Query moves for room with preloaded player, ordered by inserted_at DESC, limit 50
   - **Verify**: T020 move history tests pass
