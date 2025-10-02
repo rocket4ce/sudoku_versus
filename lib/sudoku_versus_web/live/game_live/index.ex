@@ -22,6 +22,7 @@ defmodule SudokuVersusWeb.GameLive.Index do
       |> assign(:current_user_id, user_id)
       |> assign(:filter_difficulty, nil)
       |> assign(:rooms_count, length(rooms))
+      |> assign(:creating_room, false)
       |> assign(:form, to_form(changeset))
       |> stream(:rooms, rooms)
 
@@ -29,23 +30,49 @@ defmodule SudokuVersusWeb.GameLive.Index do
   end
 
   @impl true
-  def handle_event("create_room", %{"game_room" => room_params}, socket) do
-    # Add required fields
-    attrs =
-      room_params
-      |> Map.put("creator_id", socket.assigns.current_user_id)
-      |> Map.put("visibility", Map.get(room_params, "visibility", "public"))
-      |> ensure_puzzle_id()
+  def handle_event("create_room", %{"room" => room_params}, socket) do
+    handle_event("create_room", %{"game_room" => room_params}, socket)
+  end
 
-    case Games.create_game_room(attrs) do
+  def handle_event("create_room", %{"game_room" => room_params}, socket) do
+    # Set loading state
+    socket = assign(socket, :creating_room, true)
+
+    # Extract room parameters
+    name = Map.get(room_params, "name", "New Room")
+    difficulty = Map.get(room_params, "difficulty", "medium") |> String.to_existing_atom()
+    size = Map.get(room_params, "grid_size", "9") |> String.to_integer()
+
+    # Prepare attributes for room creation
+    attrs = %{
+      name: name,
+      creator_id: socket.assigns.current_user_id,
+      difficulty: difficulty,
+      size: size,
+      max_players: 100
+    }
+
+    # Use new create_room/1 which generates puzzle and creates room
+    case Games.create_room(attrs) do
       {:ok, room} ->
         {:noreply,
          socket
+         |> assign(:creating_room, false)
          |> put_flash(:info, "Room \"#{room.name}\" created successfully!")
          |> push_navigate(to: ~p"/game/#{room.id}")}
 
+      {:error, reason} when is_binary(reason) ->
+        {:noreply,
+         socket
+         |> assign(:creating_room, false)
+         |> put_flash(:error, reason)
+         |> assign(:form, to_form(GameRoom.changeset(%GameRoom{}, %{})))}
+
       {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign(socket, :form, to_form(changeset))}
+        {:noreply,
+         socket
+         |> assign(:creating_room, false)
+         |> assign(:form, to_form(changeset))}
     end
   end
 
@@ -79,21 +106,5 @@ defmodule SudokuVersusWeb.GameLive.Index do
       |> stream_insert(:rooms, room, at: 0)
 
     {:noreply, socket}
-  end
-
-  # Helper functions
-
-  defp ensure_puzzle_id(attrs) do
-    case Map.get(attrs, "puzzle_id") do
-      nil ->
-        # Create a puzzle if not provided
-        difficulty = Map.get(attrs, "difficulty", "medium") |> String.to_existing_atom()
-        grid_size = Map.get(attrs, "grid_size", "9") |> String.to_integer()
-        {:ok, puzzle} = Games.create_puzzle(difficulty, grid_size)
-        Map.put(attrs, "puzzle_id", puzzle.id)
-
-      _ ->
-        attrs
-    end
   end
 end

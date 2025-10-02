@@ -167,7 +167,7 @@
 
 ### Rust NIF Module
 
-- [ ] **T012** [P] Implement core Sudoku generation algorithm in Rust
+- [x] **T012** [P] Implement core Sudoku generation algorithm in Rust
   - **Files**: `native/sudoku_generator/src/generator.rs`
   - **Action**: Implement backtracking with constraint propagation
   - **Functions**:
@@ -175,54 +175,61 @@
     - `create_puzzle(solution: Vec<i32>, difficulty: i32) -> Vec<i32>`
     - `count_solutions(grid: &[i32]) -> usize`
   - **Validation**: Cargo tests pass
+  - **Status**: ✅ COMPLETED - Core generation algorithm implemented with backtracking
 
-- [ ] **T013** [P] Implement fast Sudoku solver in Rust
+- [x] **T013** [P] Implement fast Sudoku solver in Rust
   - **Files**: `native/sudoku_generator/src/solver.rs`
   - **Action**: Implement fast constraint checking and solution validation
   - **Functions**:
     - `is_valid_solution(grid: &[i32], size: usize) -> bool`
     - `check_constraints(grid: &[i32], row: usize, col: usize, value: i32) -> bool`
   - **Validation**: Cargo tests pass
+  - **Status**: ✅ COMPLETED - Solver with constraint validation implemented
 
-- [ ] **T014** [P] Implement difficulty calculation in Rust
+- [x] **T014** [P] Implement difficulty calculation in Rust
   - **Files**: `native/sudoku_generator/src/difficulty.rs`
   - **Action**: Calculate clue counts and cell removal strategy
   - **Functions**:
     - `calculate_clue_count(size: usize, difficulty: i32) -> usize`
     - `remove_cells_strategically(grid: &mut Vec<i32>, target_clues: usize)`
   - **Validation**: Cargo tests pass
+  - **Status**: ✅ COMPLETED - Difficulty calculation and cell removal implemented
 
-- [ ] **T015** Implement NIF interface with dirty schedulers
+- [x] **T015** Implement NIF interface with dirty schedulers
   - **Files**: `native/sudoku_generator/src/lib.rs`
   - **Action**: Expose `generate/3` NIF function with DirtyCpu scheduling
   - **Functions**:
     - `#[rustler::nif(schedule = "DirtyCpu")] fn generate(size: i32, difficulty: i32, seed: u64) -> Result<PuzzleResult, String>`
   - **Dependencies**: T012, T013, T014 (uses their functions)
   - **Validation**: `mix compile` succeeds, NIF loads
+  - **Status**: ✅ COMPLETED - NIF interface with DirtyCpu scheduling implemented
 
-- [ ] **T016** Add Rust unit tests for all NIF functions
-  - **Files**: `native/sudoku_generator/src/tests.rs`
+- [x] **T016** Add Rust unit tests for all NIF functions
+  - **Files**: `native/sudoku_generator/src/lib.rs` (inline tests module)
   - **Action**: Test each function with edge cases
   - **Dependencies**: T012-T015
   - **Validation**: `cargo test` passes
+  - **Status**: ✅ COMPLETED - 18 unit tests covering all modules (difficulty, generator, solver, NIF interface)
 
 ### Elixir Schemas
 
-- [ ] **T017** [P] Enhance Puzzle schema with size support
+- [x] **T017** [P] Enhance Puzzle schema with size support
   - **Files**: `lib/sudoku_versus/puzzles/puzzle.ex`
   - **Action**: Add `size`, `sub_grid_size` fields, update validations
   - **Fields**: `size`, `sub_grid_size`, `grid`, `solution`, `clues_count`
   - **Validations**: size in [9,16,25,36,49,100], grid/solution length checks
   - **Validation**: Schema compiles, tests pass
+  - **Status**: ✅ COMPLETED - Schema enhanced with size fields and dynamic validations
 
-- [ ] **T018** [P] Update GameRoom schema preloads
-  - **Files**: `lib/sudoku_versus/game_rooms/game_room.ex`
+- [x] **T018** [P] Update GameRoom schema preloads
+  - **Files**: `lib/sudoku_versus/games.ex`, `lib/sudoku_versus/games/game_room.ex`
   - **Action**: Ensure puzzle association preloads correctly
   - **Validation**: Preload queries work in tests
+  - **Status**: ✅ COMPLETED - Verified that get_game_room/1 and list_active_rooms/0 already preload [:puzzle, :creator]
 
 ### Elixir Contexts
 
-- [ ] **T019** [P] Create Puzzles.Generator wrapper module
+- [x] **T019** [P] Create Puzzles.Generator wrapper module
   - **Files**: `lib/sudoku_versus/puzzles/generator.ex`
   - **Action**: Wrap Rust NIF with Elixir API
   - **Functions**:
@@ -230,14 +237,18 @@
     - Auto-generate seed using `:erlang.system_time()`
   - **Dependencies**: T015 (calls NIF)
   - **Validation**: Integration tests T005 pass
+  - **Status**: ✅ COMPLETED - Elixir wrapper with automatic seed generation implemented
 
-- [ ] **T020** [P] Create Puzzles.Validator module
+- [x] **T020** [P] Create Puzzles.Validator module
   - **Files**: `lib/sudoku_versus/puzzles/validator.ex`
   - **Action**: Implement O(1) move validation
   - **Functions**:
     - `validate_move(puzzle, row, col, value) -> {:ok, boolean()} | {:error, String.t()}`
+    - `correct_move?(puzzle, row, col, value) -> boolean()`
+    - `cell_index(row, col, size) -> integer()`
   - **Algorithm**: `index = row * size + col; Enum.at(solution, index) == value`
   - **Validation**: Tests T006 pass
+  - **Status**: ✅ COMPLETED - All 19 tests passing, O(1) validation with error handling
 
 - [ ] **T021** Implement Puzzles context with all public functions
   - **Files**: `lib/sudoku_versus/puzzles.ex`

@@ -289,7 +289,7 @@ defmodule SudokuVersus.GamesTest do
     end
 
     test "creates room with 9x9 puzzle", %{user: user} do
-      {:ok, puzzle} = Games.create_puzzle(:medium, size: 9)
+      {:ok, puzzle} = Games.create_puzzle(:medium, 9)
 
       attrs = %{
         name: "9x9 Room",
@@ -305,7 +305,7 @@ defmodule SudokuVersus.GamesTest do
     end
 
     test "creates room with 16x16 puzzle", %{user: user} do
-      {:ok, puzzle} = Games.create_puzzle(:hard, size: 16)
+      {:ok, puzzle} = Games.create_puzzle(:hard, 16)
 
       attrs = %{
         name: "16x16 Room",
@@ -321,7 +321,7 @@ defmodule SudokuVersus.GamesTest do
     end
 
     test "creates room with 25x25 puzzle", %{user: user} do
-      {:ok, puzzle} = Games.create_puzzle(:expert, size: 25)
+      {:ok, puzzle} = Games.create_puzzle(:expert, 25)
 
       attrs = %{
         name: "25x25 Room",
@@ -337,7 +337,7 @@ defmodule SudokuVersus.GamesTest do
     end
 
     test "creates room with 36x36 puzzle", %{user: user} do
-      {:ok, puzzle} = Games.create_puzzle(:easy, size: 36)
+      {:ok, puzzle} = Games.create_puzzle(:easy, 36)
 
       attrs = %{
         name: "36x36 Room",
@@ -353,7 +353,7 @@ defmodule SudokuVersus.GamesTest do
     end
 
     test "creates room with 49x49 puzzle", %{user: user} do
-      {:ok, puzzle} = Games.create_puzzle(:medium, size: 49)
+      {:ok, puzzle} = Games.create_puzzle(:medium, 49)
 
       attrs = %{
         name: "49x49 Room",
@@ -369,7 +369,7 @@ defmodule SudokuVersus.GamesTest do
     end
 
     test "creates room with 100x100 puzzle", %{user: user} do
-      {:ok, puzzle} = Games.create_puzzle(:expert, size: 100)
+      {:ok, puzzle} = Games.create_puzzle(:expert, 100)
 
       attrs = %{
         name: "100x100 Room",
@@ -385,7 +385,7 @@ defmodule SudokuVersus.GamesTest do
     end
 
     test "preloads puzzle associations correctly", %{user: user} do
-      {:ok, puzzle} = Games.create_puzzle(:easy, size: 16)
+      {:ok, puzzle} = Games.create_puzzle(:easy, 16)
 
       attrs = %{
         name: "Preload Test",

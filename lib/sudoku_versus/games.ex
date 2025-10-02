@@ -13,10 +13,10 @@ defmodule SudokuVersus.Games do
   Creates a new puzzle with the specified difficulty and grid size.
 
   Delegates to PuzzleGenerator.generate_puzzle/2.
-  Grid size defaults to 9 for standard Sudoku. Pass 16 for 16x16 MMO games.
+  Grid size defaults to 9 for standard Sudoku. Supports 9, 16, 25, 36, 49, and 100.
   """
   def create_puzzle(difficulty, grid_size \\ 9)
-      when difficulty in [:easy, :medium, :hard, :expert] and grid_size in [9, 16] do
+      when difficulty in [:easy, :medium, :hard, :expert] and grid_size in [9, 16, 25, 36, 49, 100] do
     PuzzleGenerator.generate_puzzle(difficulty, grid_size)
   end
 
@@ -32,6 +32,63 @@ defmodule SudokuVersus.Games do
   def get_puzzle(_), do: nil
 
   ## Game Room functions
+
+  @doc """
+  Creates a new game room with a generated puzzle.
+
+  Generates a new puzzle of the specified size and difficulty,
+  then creates a room with that puzzle.
+
+  ## Parameters
+
+    * `attrs` - Map with keys:
+      * `:name` - Room name (string)
+      * `:creator_id` - ID of the player creating the room (binary_id)
+      * `:difficulty` - Difficulty level (atom: :easy, :medium, :hard, :expert), defaults to :medium
+      * `:size` - Puzzle size (integer: 9, 16, 25, 36, 49, 100), defaults to 9
+
+  ## Returns
+
+    * `{:ok, %GameRoom{}}` - Successfully created room with puzzle
+    * `{:error, reason}` - Puzzle generation or room creation failed
+
+  ## Examples
+
+      iex> create_room(%{name: "My Room", creator_id: id, size: 16, difficulty: :hard})
+      {:ok, %GameRoom{puzzle: %Puzzle{size: 16}}}
+  """
+  def create_room(attrs) do
+    size = Map.get(attrs, :size, 9)
+    difficulty = Map.get(attrs, :difficulty, :medium)
+    creator_id = Map.get(attrs, :creator_id)
+    name = Map.get(attrs, :name, "New Room")
+
+    # Generate puzzle using new Puzzles context
+    case SudokuVersus.Puzzles.generate_puzzle(size, difficulty) do
+      {:ok, puzzle} ->
+        # Create room with generated puzzle
+        room_attrs = %{
+          name: name,
+          creator_id: creator_id,
+          puzzle_id: puzzle.id,
+          max_players: Map.get(attrs, :max_players, 100),
+          status: :active
+        }
+
+        case create_game_room(room_attrs) do
+          {:ok, room} ->
+            # Preload puzzle for response
+            room = Repo.preload(room, [:puzzle, :creator])
+            {:ok, room}
+
+          error ->
+            error
+        end
+
+      {:error, reason} ->
+        {:error, "Puzzle generation failed: #{reason}"}
+    end
+  end
 
   @doc """
   Creates a new game room.
@@ -234,7 +291,13 @@ defmodule SudokuVersus.Games do
   end
 
   defp validate_and_score_move(puzzle, session, %{row: row, col: col, value: value}) do
-    is_correct = PuzzleGenerator.validate_move?(puzzle, row, col, value)
+    # Use new Puzzles.validate_move/4 with O(1) validation
+    is_correct =
+      case SudokuVersus.Puzzles.validate_move(puzzle, row, col, value) do
+        {:ok, true} -> true
+        {:ok, false} -> false
+        {:error, _} -> false
+      end
 
     move_data = %{
       is_correct: is_correct,

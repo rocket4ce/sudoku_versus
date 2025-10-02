@@ -27,6 +27,7 @@
           field={@form[:difficulty]}
           type="select"
           label="Difficulty"
+          id="difficulty-select"
           options={[
             {"Easy", "easy"},
             {"Medium", "medium"},
@@ -39,10 +40,15 @@
         <.input
           field={@form[:grid_size]}
           type="select"
-          label="Grid Size"
+          label="Puzzle Size"
+          id="puzzle-size-select"
           options={[
-            {"9x9 (Classic)", "9"},
-            {"16x16 (MMO)", "16"}
+            {"9×9 (Classic) - Fast", "9"},
+            {"16×16 (Large) - Fast", "16"},
+            {"25×25 (XL) - Fast", "25"},
+            {"36×36 (XXL) - Moderate", "36"},
+            {"49×49 (Huge) - Slow", "49"},
+            {"100×100 (Epic) - Very Slow", "100"}
           ]}
           value="9"
         />
@@ -59,10 +65,22 @@
         />
 
         <div>
-          <.button phx-disable-with="Creating..." class="w-full">
-            Create Room
+          <.button phx-disable-with="Generating puzzle..." class="w-full" disabled={@creating_room}>
+            <%= if @creating_room do %>
+              <span class="loading loading-spinner loading-sm"></span>
+              Generating puzzle...
+            <% else %>
+              Create Room
+            <% end %>
           </.button>
         </div>
+
+        <%= if @creating_room do %>
+          <div class="alert alert-info">
+            <.icon name="hero-information-circle" class="w-5 h-5" />
+            <span>Generating your puzzle. Larger puzzles may take a few seconds...</span>
+          </div>
+        <% end %>
       </.form>
     </div>
   </div>

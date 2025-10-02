@@ -28,7 +28,7 @@ defmodule SudokuVersus.Games.PuzzleGenerator do
   Returns {:ok, puzzle} with both grid (with empty cells as 0) and complete solution.
   """
   def generate_puzzle(difficulty, grid_size \\ 9)
-      when difficulty in [:easy, :medium, :hard, :expert] and grid_size in [9, 16] do
+      when difficulty in [:easy, :medium, :hard, :expert] and grid_size in [9, 16, 25, 36, 49, 100] do
     # Generate a complete valid Sudoku solution
     solution = generate_complete_sudoku(grid_size)
 
@@ -36,13 +36,22 @@ defmodule SudokuVersus.Games.PuzzleGenerator do
     clues_count = clues_for_difficulty(difficulty, grid_size)
     grid = remove_numbers(solution, clues_count, grid_size)
 
+    # Calculate sub_grid_size (square root of size)
+    sub_grid_size = case grid_size do
+      9 -> 3
+      16 -> 4
+      _ -> trunc(:math.sqrt(grid_size))
+    end
+
     # Create puzzle record in database
     attrs = %{
       difficulty: difficulty,
       grid: grid,
       solution: solution,
       clues_count: count_clues(grid),
-      grid_size: grid_size
+      grid_size: grid_size,
+      size: grid_size,
+      sub_grid_size: sub_grid_size
     }
 
     %Puzzle{}
