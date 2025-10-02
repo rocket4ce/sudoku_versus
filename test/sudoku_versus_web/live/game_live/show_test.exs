@@ -124,8 +124,9 @@ defmodule SudokuVersusWeb.GameLive.ShowTest do
       move_data = %{"row" => row, "col" => col, "value" => value}
       render_submit(view, "submit_move", move_data)
 
-      # Should receive broadcast message
-      assert_receive {:new_move, _move}
+      # Should receive broadcast message with full move details
+      assert_receive {:new_move,
+                      %{id: _id, row: ^row, col: ^col, value: ^value, is_correct: true}}
     end
   end
 
@@ -151,20 +152,25 @@ defmodule SudokuVersusWeb.GameLive.ShowTest do
       %{view: view, room: room, player2: player2, puzzle: puzzle}
     end
 
-    test "updates move stream when receiving new move message", %{view: view, player2: player2} do
-      # Simulate receiving a new move from player2
-      move = %{
-        id: Ecto.UUID.generate(),
-        player_id: player2.id,
-        player: player2,
-        row: 0,
-        col: 0,
-        value: 5,
-        is_correct: true,
-        inserted_at: DateTime.utc_now()
+    test "updates move stream when receiving new move message", %{
+      view: view,
+      player2: player2,
+      room: room
+    } do
+      # Player 2 makes a move
+      move_data = %{row: 0, col: 0, value: 5}
+      {:ok, move} = Games.record_move(room.id, player2.id, move_data)
+
+      # Simulate receiving the new move broadcast
+      move_broadcast = %{
+        id: move.id,
+        row: move.row,
+        col: move.col,
+        value: move.value,
+        is_correct: move.is_correct
       }
 
-      send(view.pid, {:new_move, move})
+      send(view.pid, {:new_move, move_broadcast})
 
       html = render(view)
       assert html =~ "player_two"
@@ -206,6 +212,96 @@ defmodule SudokuVersusWeb.GameLive.ShowTest do
     end
   end
 
+  describe "grid state persistence on page refresh" do
+    setup do
+      {:ok, player} = Accounts.create_guest_user(%{username: "persistent_player"})
+      {:ok, creator} = Accounts.create_guest_user(%{username: "room_creator"})
+      {:ok, puzzle} = Games.create_puzzle(:easy)
+
+      {:ok, room} =
+        Games.create_game_room(%{
+          name: "Persistence Test Room",
+          creator_id: creator.id,
+          puzzle_id: puzzle.id
+        })
+
+      {:ok, _session} = Games.join_room(room.id, player.id)
+
+      %{room: room, player: player, puzzle: puzzle}
+    end
+
+    test "grid preserves correct moves after page refresh", %{
+      conn: conn,
+      room: room,
+      player: player,
+      puzzle: puzzle
+    } do
+      # First connection: submit a correct move
+      conn1 = Plug.Test.init_test_session(conn, user_id: player.id)
+      {:ok, view1, _html} = live(conn1, ~p"/game/#{room.id}")
+
+      {row, col, value} = find_empty_cell_solution(puzzle)
+      move_data = %{"row" => to_string(row), "col" => to_string(col), "value" => to_string(value)}
+
+      render_submit(view1, "submit_move", move_data)
+
+      # Disconnect the first view (simulating page close)
+      # LiveView automatically cleans up when process exits
+
+      # Second connection: mount the page again (simulating page refresh)
+      conn2 = Plug.Test.init_test_session(conn, user_id: player.id)
+      {:ok, view2, html} = live(conn2, ~p"/game/#{room.id}")
+
+      # Get the grid state from assigns
+      grid = :sys.get_state(view2.pid).socket.assigns.grid
+
+      # Verify the move was applied to the grid
+      assert Enum.at(Enum.at(grid, row), col) == value
+
+      # Verify the grid is rendered with the value (not an input field)
+      assert html =~ ~r/<span class="text-gray-900 font-bold">#{value}<\/span>/
+    end
+
+    test "grid preserves multiple correct moves after refresh", %{
+      conn: conn,
+      room: room,
+      player: player,
+      puzzle: puzzle
+    } do
+      conn1 = Plug.Test.init_test_session(conn, user_id: player.id)
+      {:ok, view1, _html} = live(conn1, ~p"/game/#{room.id}")
+
+      # Submit three correct moves
+      moves = [
+        find_empty_cell_solution(puzzle),
+        find_next_empty_cell_solution(puzzle, 1),
+        find_next_empty_cell_solution(puzzle, 2)
+      ]
+
+      Enum.each(moves, fn {row, col, value} ->
+        move_data = %{
+          "row" => to_string(row),
+          "col" => to_string(col),
+          "value" => to_string(value)
+        }
+
+        render_submit(view1, "submit_move", move_data)
+      end)
+
+      # Refresh page
+      conn2 = Plug.Test.init_test_session(conn, user_id: player.id)
+      {:ok, view2, _html} = live(conn2, ~p"/game/#{room.id}")
+
+      # Get the grid state
+      grid = :sys.get_state(view2.pid).socket.assigns.grid
+
+      # Verify all moves were preserved
+      Enum.each(moves, fn {row, col, value} ->
+        assert Enum.at(Enum.at(grid, row), col) == value
+      end)
+    end
+  end
+
   # Helper functions
   defp find_empty_cell_solution(puzzle) do
     Enum.reduce_while(0..8, nil, fn row, _ ->
@@ -218,6 +314,30 @@ defmodule SudokuVersusWeb.GameLive.ShowTest do
         end
       end)
     end)
+  end
+
+  defp find_next_empty_cell_solution(puzzle, skip_count) do
+    result =
+      Enum.reduce_while(0..8, {0, nil}, fn row, {skipped, _} ->
+        Enum.reduce_while(0..8, {skipped, nil}, fn col, {skip_acc, _} ->
+          if Enum.at(Enum.at(puzzle.grid, row), col) == 0 do
+            if skip_acc >= skip_count do
+              value = Enum.at(Enum.at(puzzle.solution, row), col)
+              {:halt, {:halt, {skip_acc, {row, col, value}}}}
+            else
+              {:cont, {skip_acc + 1, nil}}
+            end
+          else
+            {:cont, {skip_acc, nil}}
+          end
+        end)
+      end)
+
+    case result do
+      {_, solution} when is_tuple(solution) -> solution
+      # fallback
+      _ -> find_empty_cell_solution(puzzle)
+    end
   end
 
   defp get_wrong_value(puzzle, row, col) do

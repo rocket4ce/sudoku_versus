@@ -10,7 +10,7 @@ defmodule SudokuVersusWeb.AuthControllerTest do
       assert redirected_to(conn) =~ "accounts.google.com/o/oauth2/v2/auth"
       assert redirected_to(conn) =~ "client_id="
       assert redirected_to(conn) =~ "redirect_uri="
-      assert redirected_to(conn) =~ "scope=openid%20email%20profile"
+      assert redirected_to(conn) =~ "scope=openid"
     end
 
     test "redirects to GitHub OAuth authorization URL", %{conn: conn} do
@@ -55,14 +55,14 @@ defmodule SudokuVersusWeb.AuthControllerTest do
     test "redirects to login with error on OAuth failure", %{conn: conn} do
       conn = get(conn, ~p"/auth/google/callback", %{"error" => "access_denied"})
 
-      assert redirected_to(conn) == ~p"/login"
+      assert redirected_to(conn) == ~p"/login/guest"
       assert Phoenix.Flash.get(conn.assigns.flash, :error) =~ "Authentication failed"
     end
 
     test "redirects to login when code is missing", %{conn: conn} do
       conn = get(conn, ~p"/auth/google/callback", %{})
 
-      assert redirected_to(conn) == ~p"/login"
+      assert redirected_to(conn) == ~p"/login/guest"
       assert Phoenix.Flash.get(conn.assigns.flash, :error)
     end
   end

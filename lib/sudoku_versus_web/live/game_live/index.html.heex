@@ -77,6 +77,16 @@
     </span>
   </div>
 
+  <%!-- Empty state --%>
+  <div
+    :if={@rooms_count == 0}
+    class="text-center py-12 text-gray-500"
+  >
+    <.icon name="hero-inbox" class="w-16 h-16 mx-auto mb-4 opacity-50" />
+    <p class="text-lg font-medium">No rooms available</p>
+    <p class="text-sm">Create one to get started!</p>
+  </div>
+
   <%!-- Room List --%>
   <div id="room-list" phx-update="stream" class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
     <div
@@ -113,16 +123,6 @@
           </.link>
         </div>
       </div>
-    </div>
-
-    <%!-- Empty state --%>
-    <div
-      :if={@rooms_count == 0}
-      class="col-span-full text-center py-12 text-gray-500"
-    >
-      <.icon name="hero-inbox" class="w-16 h-16 mx-auto mb-4 opacity-50" />
-      <p class="text-lg font-medium">No rooms available</p>
-      <p class="text-sm">Create one to get started!</p>
     </div>
   </div>
 </div>

@@ -377,6 +377,7 @@
   - **Details**: Handle incorrect moves with penalty countdown (10 seconds), display error flash, prevent submission during penalty
   - **Verify**: Manual testing + update T023 with penalty tests
   - **Dependencies**: T045
+  - **Status**: ✅ COMPLETED - Fixed penalty timer to properly clear after expiration using clear_flash()
 
 - [ ] **T057** [P] Add reconnection handling
   - **File**: `lib/sudoku_versus_web/live/game_live/show.ex`

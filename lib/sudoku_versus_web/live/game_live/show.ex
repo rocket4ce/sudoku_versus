@@ -31,6 +31,9 @@ defmodule SudokuVersusWeb.GameLive.Show do
         Process.send_after(self(), :tick_timer, 1000)
       end
 
+      # Reconstruct current grid state by applying all correct moves
+      current_grid = apply_moves_to_grid(room.puzzle.grid, moves)
+
       socket =
         socket
         |> assign(:page_title, room.name)
@@ -39,7 +42,7 @@ defmodule SudokuVersusWeb.GameLive.Show do
         |> assign(:current_user_id, user_id)
         |> assign(:session, session_record)
         |> assign(:puzzle, room.puzzle)
-        |> assign(:grid, room.puzzle.grid)
+        |> assign(:grid, current_grid)
         |> assign(:players_online_count, map_size(presences))
         |> assign(:moves_count, length(moves))
         |> assign(:elapsed_seconds, calculate_elapsed_seconds(room))
@@ -85,11 +88,18 @@ defmodule SudokuVersusWeb.GameLive.Show do
 
       case Games.record_move(socket.assigns.room_id, socket.assigns.current_user_id, move_attrs) do
         {:ok, move} ->
-          # Broadcast move to all players in room
+          # Broadcast move to all players in room with full details
           Phoenix.PubSub.broadcast(
             SudokuVersus.PubSub,
             "game_room:#{socket.assigns.room_id}",
-            {:new_move, move.id}
+            {:new_move,
+             %{
+               id: move.id,
+               row: move.row,
+               col: move.col,
+               value: move.value,
+               is_correct: move.is_correct
+             }}
           )
 
           # Update local session
@@ -102,10 +112,12 @@ defmodule SudokuVersusWeb.GameLive.Show do
             |> assign(:moves_count, socket.assigns.moves_count + 1)
             |> stream_insert(:moves, move, at: 0)
 
-          # Apply penalty if move was incorrect
+          # Update grid if move was correct
           socket =
             if move.is_correct do
-              put_flash(socket, :info, "Correct! +#{move.points_earned} points")
+              socket
+              |> assign(:grid, update_grid(socket.assigns.grid, move.row, move.col, move.value))
+              |> put_flash(:info, "Correct! +#{move.points_earned} points")
             else
               apply_penalty(socket)
             end
@@ -122,16 +134,28 @@ defmodule SudokuVersusWeb.GameLive.Show do
   end
 
   @impl true
-  def handle_info({:new_move, move_id}, socket) do
+  def handle_info({:new_move, move_data}, socket) do
     # Another player made a move, fetch and add to stream (with player preloaded)
     moves = Games.get_room_moves(socket.assigns.room_id, limit: 1)
 
     case moves do
-      [move] when move.id == move_id ->
+      [move] when move.id == move_data.id ->
         socket =
           socket
           |> assign(:moves_count, socket.assigns.moves_count + 1)
           |> stream_insert(:moves, move, at: 0)
+
+        # Update grid if move was correct
+        socket =
+          if move_data.is_correct do
+            assign(
+              socket,
+              :grid,
+              update_grid(socket.assigns.grid, move_data.row, move_data.col, move_data.value)
+            )
+          else
+            socket
+          end
 
         {:noreply, socket}
 
@@ -190,14 +214,12 @@ defmodule SudokuVersusWeb.GameLive.Show do
         Process.send_after(self(), :penalty_tick, 1000)
         {:noreply, assign(socket, :penalty_remaining, remaining)}
       else
-        # Penalty expired
-        socket =
-          socket
-          |> assign(:penalty_until, nil)
-          |> assign(:penalty_remaining, 0)
-          |> put_flash(:info, "Penalty cleared! You can submit moves again.")
-
-        {:noreply, socket}
+        # Penalty expired - clear the penalty state
+        {:noreply,
+         socket
+         |> assign(:penalty_until, nil)
+         |> assign(:penalty_remaining, 0)
+         |> clear_flash()}
       end
     else
       {:noreply, socket}
@@ -260,5 +282,23 @@ defmodule SudokuVersusWeb.GameLive.Show do
     |> assign(:penalty_until, penalty_until)
     |> assign(:penalty_remaining, 10)
     |> put_flash(:error, "Incorrect move! Wait 10 seconds before trying again.")
+  end
+
+  defp update_grid(grid, row, col, value) do
+    # Update the grid immutably at the given row and column
+    List.update_at(grid, row, fn row_list ->
+      List.update_at(row_list, col, fn _ -> value end)
+    end)
+  end
+
+  defp apply_moves_to_grid(grid, moves) do
+    # Apply all correct moves to the grid to reconstruct current state
+    # Moves are ordered by inserted_at DESC, so we need to reverse to apply oldest first
+    moves
+    |> Enum.reverse()
+    |> Enum.filter(& &1.is_correct)
+    |> Enum.reduce(grid, fn move, acc_grid ->
+      update_grid(acc_grid, move.row, move.col, move.value)
+    end)
   end
 end

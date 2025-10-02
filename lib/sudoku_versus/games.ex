@@ -333,15 +333,17 @@ defmodule SudokuVersus.Games do
   def get_leaderboard(difficulty \\ nil, opts \\ []) do
     limit = Keyword.get(opts, :limit, 100)
 
+    alias SudokuVersus.Games.LeaderboardEntry
+
     query =
       if difficulty do
-        from(l in "leaderboard_entries",
+        from(l in LeaderboardEntry,
           where: l.difficulty == ^to_string(difficulty),
           order_by: [asc: l.rank],
           limit: ^limit
         )
       else
-        from(l in "leaderboard_entries",
+        from(l in LeaderboardEntry,
           order_by: [asc: l.difficulty, asc: l.rank],
           limit: ^limit
         )

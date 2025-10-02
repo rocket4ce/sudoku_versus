@@ -14,6 +14,13 @@ defmodule SudokuVersusWeb.AuthController do
     redirect(conn, external: authorize_url)
   end
 
+  def authorize(conn, %{"provider" => _provider}) do
+    conn
+    |> put_status(:not_found)
+    |> put_flash(:error, "Unsupported OAuth provider")
+    |> redirect(to: ~p"/")
+  end
+
   @doc """
   Handles the OAuth callback from the provider.
 
