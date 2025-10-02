@@ -38,8 +38,11 @@ defmodule SudokuVersusWeb.Router do
   scope "/", SudokuVersusWeb do
     pipe_through :browser
 
-    live "/game", GameLive.Index, :index
-    live "/game/:id", GameLive.Show, :show
+    live_session :authenticated,
+      on_mount: {SudokuVersusWeb.Plugs.Authenticate, :default} do
+      live "/game", GameLive.Index, :index
+      live "/game/:id", GameLive.Show, :show
+    end
   end
 
   # Other scopes may use custom stacks.

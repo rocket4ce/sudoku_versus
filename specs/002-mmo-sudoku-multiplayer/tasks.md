@@ -254,19 +254,19 @@
   - **Verify**: T020 move history tests pass
   - **Dependencies**: T012, T036
 
-- [ ] **T038** [P] Implement LeaderboardRefresher GenServer
+- [X] **T038** [P] Implement LeaderboardRefresher GenServer
   - **File**: `lib/sudoku_versus/games/leaderboard_refresher.ex`
   - **Details**: GenServer that refreshes materialized view every 60 seconds
   - **Verify**: T020 leaderboard refresh test passes
   - **Dependencies**: T014
 
-- [ ] **T039** Implement refresh_leaderboard/0 and get_leaderboard/2
+- [X] **T039** Implement refresh_leaderboard/0 and get_leaderboard/2
   - **File**: `lib/sudoku_versus/games.ex`
   - **Details**: Execute REFRESH MATERIALIZED VIEW CONCURRENTLY, query leaderboard by difficulty with rank ordering
   - **Verify**: T020 leaderboard query tests pass
   - **Dependencies**: T014, T038
 
-- [ ] **T040** Update application.ex to start LeaderboardRefresher
+- [X] **T040** Update application.ex to start LeaderboardRefresher
   - **File**: `lib/sudoku_versus/application.ex`
   - **Details**: Add SudokuVersus.Games.LeaderboardRefresher to supervision tree
   - **Dependencies**: T038
@@ -357,12 +357,12 @@
   - **Dependencies**: T015, T045
 
 ### Session Management
-- [ ] **T054** [P] Create authentication plug
+- [X] **T054** [P] Create authentication plug
   - **File**: `lib/sudoku_versus_web/plugs/authenticate.ex`
   - **Details**: Load current_user from session, assign to conn/socket
   - **Dependencies**: T029
 
-- [ ] **T055** Add authentication to live_session in router
+- [X] **T055** Add authentication to live_session in router
   - **File**: `lib/sudoku_versus_web/router.ex`
   - **Details**: Protect /game routes with authentication, redirect to /login if not authenticated
   - **Dependencies**: T054

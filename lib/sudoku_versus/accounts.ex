@@ -102,6 +102,23 @@ defmodule SudokuVersus.Accounts do
   end
 
   @doc """
+  Gets a user by ID.
+
+  ## Examples
+
+      iex> get_user(user_id)
+      %User{}
+
+      iex> get_user("nonexistent_id")
+      nil
+  """
+  def get_user(id) when is_binary(id) do
+    Repo.get(User, id)
+  end
+
+  def get_user(_), do: nil
+
+  @doc """
   Gets a user by username.
 
   ## Examples
