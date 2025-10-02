@@ -71,10 +71,10 @@
 
 ---
 
-## Phase 3.2: Tests First (TDD) ⚠️ MUST COMPLETE BEFORE 3.3
-**CRITICAL: These tests MUST be written and MUST FAIL before ANY implementation**
+## Phase 3.2: Tests First (TDD) ✅ COMPLETED
+**All tests written and failing as expected (TDD approach)**
 
-- [ ] **T005** [P] Rust NIF wrapper integration tests in `test/sudoku_versus/puzzles/generator_test.exs`
+- [x] **T005** [P] Rust NIF wrapper integration tests in `test/sudoku_versus/puzzles/generator_test.exs`
   - **Files**: `test/sudoku_versus/puzzles/generator_test.exs`
   - **Tests**:
     - Generate 9×9 easy puzzle in <50ms
@@ -87,9 +87,9 @@
     - Return error for invalid difficulty (:impossible)
     - Grid and solution have correct lengths
     - Solution is valid Sudoku (all constraints met)
-  - **Status**: MUST FAIL (no implementation yet)
+  - **Status**: ✅ COMPLETED - Tests written, currently failing (expected)
 
-- [ ] **T006** [P] Move validation tests in `test/sudoku_versus/puzzles/validator_test.exs`
+- [x] **T006** [P] Move validation tests in `test/sudoku_versus/puzzles/validator_test.exs`
   - **Files**: `test/sudoku_versus/puzzles/validator_test.exs`
   - **Tests**:
     - Validate correct move returns true
@@ -101,9 +101,9 @@
     - Return error for col >= size
     - Return error for value < 1
     - Return error for value > size
-  - **Status**: MUST FAIL (no implementation yet)
+  - **Status**: ✅ COMPLETED - Tests written, currently failing (expected)
 
-- [ ] **T007** [P] Puzzles context function tests in `test/sudoku_versus/puzzles_test.exs`
+- [x] **T007** [P] Puzzles context function tests in `test/sudoku_versus/puzzles_test.exs`
   - **Files**: `test/sudoku_versus/puzzles_test.exs`
   - **Tests**:
     - `generate_puzzle/2` creates valid puzzle
@@ -114,10 +114,10 @@
     - `list_puzzles_by_size_and_difficulty/2` filters correctly
     - `list_puzzles_by_size_and_difficulty/2` limits to 50
     - `list_puzzles_by_size_and_difficulty/2` orders by inserted_at DESC
-  - **Status**: MUST FAIL (no implementation yet)
+  - **Status**: ✅ COMPLETED - Tests written, currently failing (expected)
 
-- [ ] **T008** [P] Enhanced GameRoom context tests in `test/sudoku_versus/game_rooms_test.exs`
-  - **Files**: `test/sudoku_versus/game_rooms_test.exs`
+- [x] **T008** [P] Enhanced GameRoom context tests in `test/sudoku_versus/games_test.exs`
+  - **Files**: `test/sudoku_versus/games_test.exs`
   - **Tests**:
     - Create room with 9×9 puzzle
     - Create room with 16×16 puzzle
@@ -126,9 +126,9 @@
     - Create room with 49×49 puzzle
     - Create room with 100×100 puzzle
     - Preload puzzle associations correctly
-  - **Status**: Enhancement to existing tests
+  - **Status**: ✅ COMPLETED - Tests added to existing test file
 
-- [ ] **T009** [P] LiveView game room creation tests in `test/sudoku_versus_web/live/game_live/index_test.exs`
+- [x] **T009** [P] LiveView game room creation tests in `test/sudoku_versus_web/live/game_live/index_test.exs`
   - **Files**: `test/sudoku_versus_web/live/game_live/index_test.exs`
   - **Tests**:
     - Render puzzle size selector (#puzzle-size-select)
@@ -139,9 +139,9 @@
     - Create room with 100×100 puzzle
     - Show error on generation timeout
     - Redirect to game room on success
-  - **Status**: Enhancement to existing tests
+  - **Status**: ✅ COMPLETED - Tests added to existing test file
 
-- [ ] **T010** [P] LiveView move validation tests in `test/sudoku_versus_web/live/game_live/show_test.exs`
+- [x] **T010** [P] LiveView move validation tests in `test/sudoku_versus_web/live/game_live/show_test.exs`
   - **Files**: `test/sudoku_versus_web/live/game_live/show_test.exs`
   - **Tests**:
     - Submit correct move updates UI
@@ -149,9 +149,9 @@
     - Move validation uses new O(1) lookup
     - Score updates correctly
     - Streak updates correctly
-  - **Status**: Enhancement to existing tests
+  - **Status**: ✅ COMPLETED - Tests added to existing test file
 
-- [ ] **T011** [P] Property-based tests for puzzle validity in `test/sudoku_versus/puzzles/property_test.exs`
+- [x] **T011** [P] Property-based tests for puzzle validity in `test/sudoku_versus/puzzles/property_test.exs`
   - **Files**: `test/sudoku_versus/puzzles/property_test.exs`
   - **Tests**:
     - All generated puzzles have exactly one solution
@@ -159,7 +159,7 @@
     - Clue count matches difficulty percentage
     - Grid values are subset of solution values
     - Sub-grid size is √N for all sizes
-  - **Status**: MUST FAIL (no implementation yet)
+  - **Status**: ✅ COMPLETED - Tests written using ExUnitProperties (requires stream_data dependency)
 
 ---
 

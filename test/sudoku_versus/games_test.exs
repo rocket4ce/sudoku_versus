@@ -282,6 +282,129 @@ defmodule SudokuVersus.GamesTest do
     end
   end
 
+  describe "create_game_room/1 - multi-size puzzle support" do
+    setup do
+      {:ok, user} = Accounts.create_guest_user(%{username: "multi_size_tester"})
+      %{user: user}
+    end
+
+    test "creates room with 9x9 puzzle", %{user: user} do
+      {:ok, puzzle} = Games.create_puzzle(:medium, size: 9)
+
+      attrs = %{
+        name: "9x9 Room",
+        creator_id: user.id,
+        puzzle_id: puzzle.id
+      }
+
+      assert {:ok, room} = Games.create_game_room(attrs)
+
+      # Preload puzzle to verify size
+      room_with_puzzle = Repo.preload(room, :puzzle)
+      assert room_with_puzzle.puzzle.size == 9
+    end
+
+    test "creates room with 16x16 puzzle", %{user: user} do
+      {:ok, puzzle} = Games.create_puzzle(:hard, size: 16)
+
+      attrs = %{
+        name: "16x16 Room",
+        creator_id: user.id,
+        puzzle_id: puzzle.id
+      }
+
+      assert {:ok, room} = Games.create_game_room(attrs)
+
+      room_with_puzzle = Repo.preload(room, :puzzle)
+      assert room_with_puzzle.puzzle.size == 16
+      assert room_with_puzzle.puzzle.sub_grid_size == 4
+    end
+
+    test "creates room with 25x25 puzzle", %{user: user} do
+      {:ok, puzzle} = Games.create_puzzle(:expert, size: 25)
+
+      attrs = %{
+        name: "25x25 Room",
+        creator_id: user.id,
+        puzzle_id: puzzle.id
+      }
+
+      assert {:ok, room} = Games.create_game_room(attrs)
+
+      room_with_puzzle = Repo.preload(room, :puzzle)
+      assert room_with_puzzle.puzzle.size == 25
+      assert room_with_puzzle.puzzle.sub_grid_size == 5
+    end
+
+    test "creates room with 36x36 puzzle", %{user: user} do
+      {:ok, puzzle} = Games.create_puzzle(:easy, size: 36)
+
+      attrs = %{
+        name: "36x36 Room",
+        creator_id: user.id,
+        puzzle_id: puzzle.id
+      }
+
+      assert {:ok, room} = Games.create_game_room(attrs)
+
+      room_with_puzzle = Repo.preload(room, :puzzle)
+      assert room_with_puzzle.puzzle.size == 36
+      assert room_with_puzzle.puzzle.sub_grid_size == 6
+    end
+
+    test "creates room with 49x49 puzzle", %{user: user} do
+      {:ok, puzzle} = Games.create_puzzle(:medium, size: 49)
+
+      attrs = %{
+        name: "49x49 Room",
+        creator_id: user.id,
+        puzzle_id: puzzle.id
+      }
+
+      assert {:ok, room} = Games.create_game_room(attrs)
+
+      room_with_puzzle = Repo.preload(room, :puzzle)
+      assert room_with_puzzle.puzzle.size == 49
+      assert room_with_puzzle.puzzle.sub_grid_size == 7
+    end
+
+    test "creates room with 100x100 puzzle", %{user: user} do
+      {:ok, puzzle} = Games.create_puzzle(:expert, size: 100)
+
+      attrs = %{
+        name: "100x100 Room",
+        creator_id: user.id,
+        puzzle_id: puzzle.id
+      }
+
+      assert {:ok, room} = Games.create_game_room(attrs)
+
+      room_with_puzzle = Repo.preload(room, :puzzle)
+      assert room_with_puzzle.puzzle.size == 100
+      assert room_with_puzzle.puzzle.sub_grid_size == 10
+    end
+
+    test "preloads puzzle associations correctly", %{user: user} do
+      {:ok, puzzle} = Games.create_puzzle(:easy, size: 16)
+
+      attrs = %{
+        name: "Preload Test",
+        creator_id: user.id,
+        puzzle_id: puzzle.id
+      }
+
+      {:ok, room} = Games.create_game_room(attrs)
+
+      # Fetch with preload
+      room_with_puzzle = Repo.preload(room, :puzzle)
+
+      assert %Ecto.Association.NotLoaded{} != room_with_puzzle.puzzle
+      assert is_integer(room_with_puzzle.puzzle.size)
+      assert is_list(room_with_puzzle.puzzle.grid)
+      assert is_list(room_with_puzzle.puzzle.solution)
+    end
+  end
+
   # Helper functions
   defp find_empty_cell_solution(puzzle) do
     Enum.reduce_while(0..8, nil, fn row, _ ->

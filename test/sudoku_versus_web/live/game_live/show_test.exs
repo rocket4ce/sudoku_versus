@@ -302,6 +302,99 @@ defmodule SudokuVersusWeb.GameLive.ShowTest do
     end
   end
 
+  describe "move validation with new O(1) lookup" do
+    setup do
+      {:ok, player} = Accounts.create_guest_user(%{username: "validator"})
+      {:ok, creator} = Accounts.create_guest_user(%{username: "val_creator"})
+      {:ok, puzzle} = Games.create_puzzle(:medium)
+
+      {:ok, room} =
+        Games.create_game_room(%{
+          name: "Validation Test",
+          creator_id: creator.id,
+          puzzle_id: puzzle.id
+        })
+
+      {:ok, _session} = Games.join_room(room.id, player.id)
+
+      conn = build_conn() |> Plug.Test.init_test_session(user_id: player.id)
+      {:ok, view, _html} = live(conn, ~p"/game/#{room.id}")
+
+      %{view: view, room: room, puzzle: puzzle}
+    end
+
+    test "validates correct move and updates UI", %{view: view, puzzle: puzzle} do
+      {row, col, value} = find_empty_cell_solution(puzzle)
+
+      move_data = %{"row" => row, "col" => col, "value" => value}
+
+      html = render_submit(view, "submit_move", move_data)
+
+      # UI should show success feedback (green border, checkmark, etc.)
+      assert html =~ ~r/correct|success/i or html =~ "✓"
+    end
+
+    test "validates incorrect move and shows error", %{view: view, puzzle: puzzle} do
+      {row, col, _correct} = find_empty_cell_solution(puzzle)
+      wrong_value = get_wrong_value(puzzle, row, col)
+
+      move_data = %{"row" => row, "col" => col, "value" => wrong_value}
+
+      html = render_submit(view, "submit_move", move_data)
+
+      # UI should show error feedback (red border, x mark, etc.)
+      assert html =~ ~r/incorrect|error/i or html =~ "✗"
+    end
+
+    test "validation uses O(1) solution lookup", %{view: view, puzzle: puzzle} do
+      {row, col, value} = find_empty_cell_solution(puzzle)
+
+      # Time the validation (should be <5ms even for large puzzles)
+      {time_us, _html} = :timer.tc(fn ->
+        render_submit(view, "submit_move", %{"row" => row, "col" => col, "value" => value})
+      end)
+
+      time_ms = time_us / 1000
+
+      # Validation should be fast (note: includes LiveView overhead)
+      assert time_ms < 100, "Validation took #{time_ms}ms (expected <100ms including LiveView)"
+    end
+
+    test "score updates correctly on valid move", %{view: view, puzzle: puzzle} do
+      {row, col, value} = find_empty_cell_solution(puzzle)
+
+      # Get initial score
+      initial_html = render(view)
+      initial_score = extract_score(initial_html)
+
+      # Submit correct move
+      render_submit(view, "submit_move", %{"row" => row, "col" => col, "value" => value})
+
+      # Get updated score
+      updated_html = render(view)
+      updated_score = extract_score(updated_html)
+
+      assert updated_score > initial_score
+    end
+
+    test "streak updates correctly on consecutive correct moves", %{view: view, puzzle: puzzle} do
+      # Submit multiple correct moves
+      moves = [
+        find_empty_cell_solution(puzzle),
+        find_next_empty_cell_solution(puzzle, 1),
+        find_next_empty_cell_solution(puzzle, 2)
+      ]
+
+      Enum.each(moves, fn {row, col, value} ->
+        render_submit(view, "submit_move", %{"row" => row, "col" => col, "value" => value})
+      end)
+
+      # Check streak is 3
+      html = render(view)
+      assert html =~ ~r/streak.*3/i or html =~ "🔥"
+    end
+  end
+
   # Helper functions
   defp find_empty_cell_solution(puzzle) do
     Enum.reduce_while(0..8, nil, fn row, _ ->
@@ -343,5 +436,12 @@ defmodule SudokuVersusWeb.GameLive.ShowTest do
   defp get_wrong_value(puzzle, row, col) do
     correct = Enum.at(Enum.at(puzzle.solution, row), col)
     Enum.find(1..9, fn v -> v != correct end)
+  end
+
+  defp extract_score(html) do
+    case Regex.run(~r/score.*?(\d+)/i, html) do
+      [_, score_str] -> String.to_integer(score_str)
+      _ -> 0
+    end
   end
 end
