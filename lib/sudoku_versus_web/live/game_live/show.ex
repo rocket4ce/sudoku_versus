@@ -43,6 +43,8 @@ defmodule SudokuVersusWeb.GameLive.Show do
         |> assign(:session, session_record)
         |> assign(:puzzle, room.puzzle)
         |> assign(:grid, current_grid)
+        |> assign(:grid_size, room.puzzle.grid_size)
+        |> assign(:box_size, box_size_for_grid(room.puzzle.grid_size))
         |> assign(:players_online_count, map_size(presences))
         |> assign(:moves_count, length(moves))
         |> assign(:elapsed_seconds, calculate_elapsed_seconds(room))
@@ -64,6 +66,48 @@ defmodule SudokuVersusWeb.GameLive.Show do
          socket
          |> put_flash(:error, "Error: #{inspect(reason)}")
          |> push_navigate(to: ~p"/game")}
+    end
+  end
+
+  @impl true
+  def handle_params(_params, _url, socket) do
+    # This handles reconnection after disconnects
+    # Re-sync state from database when reconnecting
+    if connected?(socket) && socket.assigns[:room_id] do
+      room_id = socket.assigns.room_id
+
+      # Refresh room state and moves from database
+      case Games.get_game_room(room_id) do
+        nil ->
+          {:noreply,
+           socket
+           |> put_flash(:error, "Room no longer exists")
+           |> push_navigate(to: ~p"/game")}
+
+        room ->
+          # Fetch latest moves and reconstruct grid state
+          moves = Games.get_room_moves(room_id)
+          current_grid = apply_moves_to_grid(room.puzzle.grid, moves)
+          presences = Presence.list("game_room:#{room_id}")
+
+          socket =
+            socket
+            |> assign(:room, room)
+            |> assign(:puzzle, room.puzzle)
+            |> assign(:grid, current_grid)
+            |> assign(:grid_size, room.puzzle.grid_size)
+            |> assign(:box_size, box_size_for_grid(room.puzzle.grid_size))
+            |> assign(:players_online_count, map_size(presences))
+            |> assign(:moves_count, length(moves))
+            |> assign(:elapsed_seconds, calculate_elapsed_seconds(room))
+            |> stream(:moves, moves, reset: true)
+            |> stream(:players, extract_players(presences), reset: true)
+            |> put_flash(:info, "Reconnected successfully")
+
+          {:noreply, socket}
+      end
+    else
+      {:noreply, socket}
     end
   end
 
@@ -301,4 +345,21 @@ defmodule SudokuVersusWeb.GameLive.Show do
       update_grid(acc_grid, move.row, move.col, move.value)
     end)
   end
+
+  defp box_size_for_grid(9), do: 3
+  defp box_size_for_grid(16), do: 4
+
+  @doc """
+  Converts numeric values to hexadecimal representation for 16x16 Sudoku.
+  Values 1-9 stay as is, 10-16 become A-F.
+  """
+  def hex_value(value) when value <= 9, do: value
+  def hex_value(10), do: "A"
+  def hex_value(11), do: "B"
+  def hex_value(12), do: "C"
+  def hex_value(13), do: "D"
+  def hex_value(14), do: "E"
+  def hex_value(15), do: "F"
+  def hex_value(16), do: "G"
+  def hex_value(_), do: "?"
 end

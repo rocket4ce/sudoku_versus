@@ -37,6 +37,17 @@
         />
 
         <.input
+          field={@form[:grid_size]}
+          type="select"
+          label="Grid Size"
+          options={[
+            {"9x9 (Classic)", "9"},
+            {"16x16 (MMO)", "16"}
+          ]}
+          value="9"
+        />
+
+        <.input
           field={@form[:visibility]}
           type="select"
           label="Visibility"
@@ -102,6 +113,10 @@
         <div class="flex flex-wrap gap-2 text-sm">
           <span class="badge badge-primary">
             {String.capitalize(to_string(room.puzzle.difficulty))}
+          </span>
+
+          <span class="badge badge-secondary">
+            {room.puzzle.grid_size}x{room.puzzle.grid_size}
           </span>
 
           <span class="badge badge-ghost">

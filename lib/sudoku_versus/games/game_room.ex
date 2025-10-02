@@ -67,8 +67,8 @@ defmodule SudokuVersus.Games.GameRoom do
   defp validate_room_name(changeset) do
     changeset
     |> validate_length(:name, min: 1, max: 30)
-    |> validate_format(:name, ~r/^[\p{L}\p{N}\p{So}\s_-]+$/u,
-      message: "must contain only letters, numbers, emojis, spaces, underscores, and hyphens"
+    |> validate_format(:name, ~r/^[\p{L}\p{N}\p{S}\p{M}\s_'\-]+$/u,
+      message: "must contain only letters, numbers, emojis, spaces, underscores, hyphens, and apostrophes"
     )
   end
 end

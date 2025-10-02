@@ -10,12 +10,14 @@ defmodule SudokuVersus.Games do
   ## Puzzle functions
 
   @doc """
-  Creates a new puzzle with the specified difficulty.
+  Creates a new puzzle with the specified difficulty and grid size.
 
-  Delegates to PuzzleGenerator.generate_puzzle/1.
+  Delegates to PuzzleGenerator.generate_puzzle/2.
+  Grid size defaults to 9 for standard Sudoku. Pass 16 for 16x16 MMO games.
   """
-  def create_puzzle(difficulty) when difficulty in [:easy, :medium, :hard, :expert] do
-    PuzzleGenerator.generate_puzzle(difficulty)
+  def create_puzzle(difficulty, grid_size \\ 9)
+      when difficulty in [:easy, :medium, :hard, :expert] and grid_size in [9, 16] do
+    PuzzleGenerator.generate_puzzle(difficulty, grid_size)
   end
 
   @doc """

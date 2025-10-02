@@ -379,10 +379,11 @@
   - **Dependencies**: T045
   - **Status**: ✅ COMPLETED - Fixed penalty timer to properly clear after expiration using clear_flash()
 
-- [ ] **T057** [P] Add reconnection handling
+- [X] **T057** [P] Add reconnection handling
   - **File**: `lib/sudoku_versus_web/live/game_live/show.ex`
   - **Details**: Handle disconnects gracefully, re-subscribe to PubSub on reconnect, sync state from database
   - **Dependencies**: T045
+  - **Status**: ✅ COMPLETED - Added handle_params to re-sync state from database on reconnection
 
 - [X] **T058** [P] Add empty state handling for streams
   - **File**: `lib/sudoku_versus_web/live/game_live/index.html.heex`, `lib/sudoku_versus_web/live/game_live/show.html.heex`
@@ -416,9 +417,9 @@
   - **Details**: Add MMO Sudoku section with features, architecture diagram, getting started
   - **Dependencies**: T062
 
-- [ ] **T064** [P] Create seeds.exs for development
+- [X] **T064** [P] Create seeds.exs for development - ✅ COMPLETED
   - **File**: `priv/repo/seeds.exs`
-  - **Details**: Generate 10 puzzles per difficulty, create 5 sample rooms, create 10 sample users
+  - **Details**: Generated 24 puzzles (3 per difficulty for both 9x9 and 16x16), created 8 sample rooms with emoji names, created 10 sample users. Fixed GameRoom validation to support apostrophes and all emoji categories (\\p{S}, \\p{M}).
   - **Dependencies**: T032, T029, T034
 
 ### Final Validation

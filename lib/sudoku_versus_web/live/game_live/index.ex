@@ -88,7 +88,8 @@ defmodule SudokuVersusWeb.GameLive.Index do
       nil ->
         # Create a puzzle if not provided
         difficulty = Map.get(attrs, "difficulty", "medium") |> String.to_existing_atom()
-        {:ok, puzzle} = Games.create_puzzle(difficulty)
+        grid_size = Map.get(attrs, "grid_size", "9") |> String.to_integer()
+        {:ok, puzzle} = Games.create_puzzle(difficulty, grid_size)
         Map.put(attrs, "puzzle_id", puzzle.id)
 
       _ ->

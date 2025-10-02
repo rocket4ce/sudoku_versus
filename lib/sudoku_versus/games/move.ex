@@ -51,9 +51,9 @@ defmodule SudokuVersus.Games.Move do
       :game_room_id,
       :player_session_id
     ])
-    |> validate_number(:row, greater_than_or_equal_to: 0, less_than_or_equal_to: 8)
-    |> validate_number(:col, greater_than_or_equal_to: 0, less_than_or_equal_to: 8)
-    |> validate_number(:value, greater_than_or_equal_to: 1, less_than_or_equal_to: 9)
+    |> validate_number(:row, greater_than_or_equal_to: 0, less_than_or_equal_to: 15)
+    |> validate_number(:col, greater_than_or_equal_to: 0, less_than_or_equal_to: 15)
+    |> validate_number(:value, greater_than_or_equal_to: 1, less_than_or_equal_to: 16)
     |> validate_number(:points_earned, greater_than_or_equal_to: 0)
     |> put_submitted_at()
     |> foreign_key_constraint(:player_id)
