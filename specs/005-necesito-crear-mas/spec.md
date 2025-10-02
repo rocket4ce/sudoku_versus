@@ -56,6 +56,9 @@ A: Blocking with spinner: Display loading spinner during generation, blocking ga
 **Q5: Should puzzles be generated on-demand or pre-generated and cached?**
 A: On-demand only: Generate puzzles when users create rooms, no pre-caching or post-generation caching. Each game room gets a freshly generated puzzle.
 
+**Q6: What is the maximum acceptable memory usage per puzzle (especially for 100×100)?**
+A: Moderate: <5MB per puzzle for 100×100 grids. Standard storage format acceptable, minimal optimization needed.
+
 ---
 
 ---
@@ -138,7 +141,7 @@ Game room creators need to generate puzzles quickly without delays, especially w
 - **PR-001**: Puzzle generation MUST complete within: 9×9 <50ms, 16×16 <100ms, 25×25 <500ms, 36×36 <1s, 49×49 <2s, 100×100 <5s
 - **PR-002**: Move validation MUST complete within 5ms for all puzzle sizes
 - **PR-003**: System MUST support 10 concurrent puzzle generation requests without performance degradation
-- **PR-004**: Memory usage MUST NOT exceed [NEEDS CLARIFICATION: memory limit per puzzle - 10MB? 100MB for largest puzzles?]
+- **PR-004**: Memory usage per puzzle MUST NOT exceed 5MB (for largest 100×100 puzzles). Smaller puzzles should use proportionally less memory.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -171,9 +174,9 @@ Game room creators need to generate puzzles quickly without delays, especially w
 - [x] All mandatory sections completed
 
 ### Requirement Completeness
-- [ ] No [NEEDS CLARIFICATION] markers remain - **6 clarifications needed**
-- [x] Requirements are testable and unambiguous (except clarified items)
-- [ ] Success criteria are measurable - **needs specific performance targets**
+- [x] No [NEEDS CLARIFICATION] markers remain - **All 6 clarifications resolved**
+- [x] Requirements are testable and unambiguous
+- [x] Success criteria are measurable - **All performance targets defined**
 - [x] Scope is clearly bounded - multi-size puzzle generation and validation
 - [x] Dependencies and assumptions identified
 
@@ -183,7 +186,7 @@ Game room creators need to generate puzzles quickly without delays, especially w
 3. ~~**Concurrent Load**~~: ✅ Resolved - Support 10 concurrent puzzle generations
 4. ~~**UI Blocking**~~: ✅ Resolved - Blocking UI with loading spinner
 5. ~~**Caching Strategy**~~: ✅ Resolved - On-demand generation only, no pre-caching or post-generation reuse
-6. **Memory Limits**: Maximum acceptable memory usage per puzzle (especially for 100×100)?
+6. ~~**Memory Limits**~~: ✅ Resolved - <5MB per puzzle (100×100), proportionally less for smaller sizes
 
 ---
 
