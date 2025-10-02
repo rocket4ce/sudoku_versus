@@ -10,7 +10,7 @@ defmodule SudokuVersusWeb.GameLive.Show do
 
     with {:ok, room} <- fetch_room(room_id),
          {:ok, session_record} <- ensure_player_session(room_id, user_id) do
-      
+
       if connected?(socket) do
         # Subscribe to PubSub for real-time updates
         Phoenix.PubSub.subscribe(SudokuVersus.PubSub, "game_room:#{room_id}")
@@ -95,7 +95,7 @@ defmodule SudokuVersusWeb.GameLive.Show do
   def handle_info({:new_move, move_id}, socket) do
     # Another player made a move, fetch and add to stream
     moves = Games.get_room_moves(socket.assigns.room_id, limit: 1)
-    
+
     case moves do
       [move] when move.id == move_id ->
         {:noreply, stream_insert(socket, :moves, move, at: 0)}
@@ -109,7 +109,7 @@ defmodule SudokuVersusWeb.GameLive.Show do
   def handle_info(%{event: "presence_diff", payload: _diff}, socket) do
     # Update player count and list
     presences = Presence.list("game_room:#{socket.assigns.room_id}")
-    
+
     socket =
       socket
       |> assign(:players_online_count, map_size(presences))

@@ -20,7 +20,7 @@ defmodule SudokuVersusWeb.LeaderboardLive.Index do
   @impl true
   def handle_event("filter_difficulty", %{"difficulty" => difficulty}, socket) do
     filter = if difficulty == "", do: nil, else: String.to_existing_atom(difficulty)
-    
+
     leaderboard = Games.get_leaderboard(filter, limit: 100)
 
     socket =

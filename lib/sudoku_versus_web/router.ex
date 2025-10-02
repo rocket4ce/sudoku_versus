@@ -28,7 +28,7 @@ defmodule SudokuVersusWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
-    
+
     live "/login/guest", AuthLive.Guest, :new
     live "/register", AuthLive.Register, :new
     live "/leaderboard", LeaderboardLive.Index, :index

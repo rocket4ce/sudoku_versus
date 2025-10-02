@@ -52,7 +52,7 @@ defmodule SudokuVersusWeb.GameLive.Index do
   @impl true
   def handle_event("filter", %{"difficulty" => difficulty}, socket) do
     filter = if difficulty == "", do: nil, else: String.to_existing_atom(difficulty)
-    
+
     rooms =
       if filter do
         Games.list_active_rooms()

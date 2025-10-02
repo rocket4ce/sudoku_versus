@@ -17,7 +17,7 @@
     <div class="card bg-base-100 shadow-xl">
       <div class="card-body">
         <h2 class="card-title">Sudoku Puzzle</h2>
-        
+
         <%!-- Grid --%>
         <div id="sudoku-grid" class="inline-block mx-auto">
           <div class="grid grid-cols-9 gap-0 border-4 border-gray-800">
@@ -92,8 +92,8 @@
             <div class="stat-title">Your Score</div>
             <div class="stat-value text-primary">{@session.current_score}</div>
             <div class="stat-desc">
-              Streak: {@session.current_streak} | 
-              Correct: {@session.correct_moves_count} | 
+              Streak: {@session.current_streak} |
+              Correct: {@session.correct_moves_count} |
               Wrong: {@session.incorrect_moves_count}
             </div>
           </div>
@@ -111,7 +111,7 @@
           <.icon name="hero-user-group" class="w-5 h-5" />
           Players Online ({@players_online_count})
         </h3>
-        
+
         <div id="player-list" phx-update="stream" class="space-y-2">
           <div
             :for={{id, player} <- @streams.players}
@@ -136,7 +136,7 @@
           <.icon name="hero-clock" class="w-5 h-5" />
           Recent Moves
         </h3>
-        
+
         <div id="move-list" phx-update="stream" class="space-y-2 max-h-96 overflow-y-auto">
           <div
             :for={{id, move} <- @streams.moves}
