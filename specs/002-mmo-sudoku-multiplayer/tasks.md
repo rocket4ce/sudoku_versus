@@ -106,32 +106,32 @@
 ## Phase 3.2: Tests First (TDD) ⚠️ MUST COMPLETE BEFORE 3.3
 
 ### Context Tests
-- [ ] **T017** [P] Write Accounts context tests for user management
+- [X] **T017** [P] Write Accounts context tests for user management
   - **File**: `test/sudoku_versus/accounts_test.exs`
   - **Details**: Test guest registration, email/password registration, OAuth user creation, user lookup functions
   - **Expected**: All tests MUST FAIL initially (implementation doesn't exist yet)
   - **Covers**: create_guest_user/1, register_user/1, find_or_create_oauth_user/2, get_user_by_username/1, authenticate_user/2
 
-- [ ] **T018** [P] Write Games context tests for puzzle generation
+- [X] **T018** [P] Write Games context tests for puzzle generation
   - **File**: `test/sudoku_versus/games/puzzle_generator_test.exs`
   - **Details**: Test generate_puzzle/1 for each difficulty, validate_move?/4, solution caching
   - **Expected**: All tests MUST FAIL initially
   - **Covers**: generate_puzzle(:easy/:medium/:hard/:expert), validate_move?(puzzle, row, col, value), cache_solution/1
 
-- [ ] **T019** [P] Write Games context tests for scoring
+- [X] **T019** [P] Write Games context tests for scoring
   - **File**: `test/sudoku_versus/games/scorer_test.exs`
   - **Details**: Test calculate_score/3, streak multipliers, speed bonuses, penalties
   - **Expected**: All tests MUST FAIL initially
   - **Covers**: calculate_score(move, session, puzzle), base_points_for_difficulty/1, calculate_streak_multiplier/1, calculate_speed_bonus/2, calculate_penalties/1
 
-- [ ] **T020** [P] Write Games context tests for game room management
+- [X] **T020** [P] Write Games context tests for game room management
   - **File**: `test/sudoku_versus/games_test.exs`
   - **Details**: Test create_game_room/1, list_active_rooms/0, join_room/2, leave_room/2, record_move/3, get_room_moves/2
   - **Expected**: All tests MUST FAIL initially
   - **Covers**: create_game_room/1, list_active_rooms/0, join_room/2, leave_room/2, record_move/3, get_room_moves/2, update_session_stats/2, refresh_leaderboard/0
 
 ### OAuth Controller Tests
-- [ ] **T021** [P] Write OAuth controller tests
+- [X] **T021** [P] Write OAuth controller tests
   - **File**: `test/sudoku_versus_web/controllers/auth_controller_test.exs`
   - **Details**: Test GET /auth/:provider redirects, callback handling (success/error), logout
   - **Expected**: Tests MUST FAIL (controller doesn't exist yet)
@@ -139,28 +139,28 @@
   - **Note**: Use Req.Test for mocking OAuth responses
 
 ### LiveView Tests
-- [ ] **T022** [P] Write room lobby LiveView tests
+- [X] **T022** [P] Write room lobby LiveView tests
   - **File**: `test/sudoku_versus_web/live/game_live/index_test.exs`
   - **Details**: Test room list rendering (streams), room creation form, filtering by difficulty, room joining
   - **Expected**: Tests MUST FAIL
   - **Covers**: mount, render room list with streams, handle_event("create_room"), handle_event("filter"), room cards with player counts
   - **DOM IDs**: #room-list, #create-room-form, #filter-difficulty
 
-- [ ] **T023** [P] Write game room LiveView tests
+- [X] **T023** [P] Write game room LiveView tests
   - **File**: `test/sudoku_versus_web/live/game_live/show_test.exs`
   - **Details**: Test game board rendering, move submission, real-time updates via PubSub, player presence, score updates, move history streams
   - **Expected**: Tests MUST FAIL
   - **Covers**: mount with PubSub subscription, render grid, handle_event("submit_move"), handle_info({:new_move}), handle_info({:presence_diff}), streams for moves/players
   - **DOM IDs**: #sudoku-grid, #move-form, #move-list, #player-list, #score-display
 
-- [ ] **T024** [P] Write leaderboard LiveView tests
+- [X] **T024** [P] Write leaderboard LiveView tests
   - **File**: `test/sudoku_versus_web/live/leaderboard_live/index_test.exs`
   - **Details**: Test leaderboard rendering (streams), difficulty filtering, rank display
   - **Expected**: Tests MUST FAIL
   - **Covers**: mount, render leaderboard with streams, handle_event("filter_difficulty"), top 100 players
   - **DOM IDs**: #leaderboard-list, #difficulty-filter
 
-- [ ] **T025** [P] Write authentication LiveView tests
+- [X] **T025** [P] Write authentication LiveView tests
   - **File**: `test/sudoku_versus_web/live/auth_live_test.exs`
   - **Details**: Test guest login form, registration form, OAuth button redirects
   - **Expected**: Tests MUST FAIL
@@ -168,19 +168,19 @@
   - **DOM IDs**: #guest-login-form, #register-form, #google-oauth-btn, #github-oauth-btn
 
 ### Integration Tests
-- [ ] **T026** [P] Write end-to-end guest user flow test
+- [X] **T026** [P] Write end-to-end guest user flow test
   - **File**: `test/sudoku_versus_web/integration/guest_flow_test.exs`
   - **Details**: Test complete flow: guest login → create room → submit moves → see score update
   - **Expected**: Test MUST FAIL
   - **Scenario**: Guest registers → navigates to lobby → creates room "Test 🎮" → submits correct move → verifies score increases
 
-- [ ] **T027** [P] Write end-to-end multiplayer flow test
+- [X] **T027** [P] Write end-to-end multiplayer flow test
   - **File**: `test/sudoku_versus_web/integration/multiplayer_flow_test.exs`
   - **Details**: Test real-time synchronization between two players in same room
   - **Expected**: Test MUST FAIL
   - **Scenario**: User A creates room → User B joins → User A submits move → User B sees move in real-time via PubSub
 
-- [ ] **T028** [P] Write presence tracking integration test
+- [X] **T028** [P] Write presence tracking integration test
   - **File**: `test/sudoku_versus_web/integration/presence_test.exs`
   - **Details**: Test player join/leave detection via Phoenix.Presence
   - **Expected**: Test MUST FAIL
