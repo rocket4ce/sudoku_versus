@@ -242,6 +242,12 @@
   - **Verify**: T020 move recording tests pass
   - **Dependencies**: T012, T032, T033, T035
 
+- [ ] **T036a** Implement game timer tracking
+  - **File**: `lib/sudoku_versus/games.ex`
+  - **Details**: Add started_at timestamp to game_rooms on first move, calculate elapsed_time in player sessions, broadcast timer updates via PubSub every 1 second
+  - **Verify**: FR-006 game timer starts on first move and updates in real-time
+  - **Dependencies**: T036, T045
+
 - [X] **T037** Implement get_room_moves/2 for history
   - **File**: `lib/sudoku_versus/games.ex`
   - **Details**: Query moves for room with preloaded player, ordered by inserted_at DESC, limit 50
@@ -429,6 +435,12 @@
   - **Details**: Verify <100ms move validation, <200ms broadcast latency, 100+ concurrent rooms, 1000+ concurrent users
   - **Tools**: Use :timer.tc/1 for validation timing, Apache Bench for load testing
   - **Dependencies**: T065
+
+- [ ] **T068** [P] Implement timeline replay controls
+  - **File**: `lib/sudoku_versus_web/live/game_live/replay.ex`, `lib/sudoku_versus_web/live/game_live/replay.html.heex`
+  - **Details**: Create LiveView for timeline replay with play/pause/scrub controls, progress bar, move-by-move playback showing board state evolution
+  - **Verify**: FR-030 timeline controls functional
+  - **Dependencies**: T037, T046
 
 ---
 

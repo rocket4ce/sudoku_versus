@@ -125,11 +125,11 @@ Once the Sudoku is completed, players can view a timeline replay showing every m
 
 #### Game Creation & Configuration
 - **FR-001**: System MUST allow authenticated players to create new Sudoku game rooms with a custom room name
-- **FR-001a**: System MUST validate that room names contain only alphanumeric characters (A-Z, a-z, 0-9) and emojis
+- **FR-001a**: System MUST validate that room names contain only alphanumeric characters (A-Z, a-z, 0-9), spaces, and emojis
 - **FR-001b**: System MUST enforce a maximum room name length of 30 characters
 - **FR-001c**: System MUST display validation errors when room names exceed 30 characters or contain invalid characters
-- **FR-002**: System MUST support configurable grid sizes from 9x9 to 100x100 cells
-- **FR-003**: System MUST support six difficulty levels: fácil, media, difícil, experto, maestra, extrema
+- **FR-002**: System MUST support 9x9 grid size (note: larger grid sizes 16x16, 25x25, ... 100x100 are future enhancements per YAGNI principle and are not part of initial implementation)
+- **FR-003**: System MUST support four difficulty levels: easy, medium, hard, expert (note: additional levels master and extreme are future enhancements)
 - **FR-004**: System MUST generate valid, solvable Sudoku puzzles for the selected configuration
 - **FR-005**: System MUST assign a unique identifier to each game room
 - **FR-006**: System MUST initialize a game timer that starts when the first move is made
@@ -165,16 +165,17 @@ Once the Sudoku is completed, players can view a timeline replay showing every m
 #### Scoring System
 - **FR-022**: System MUST award points to players for each correct number placed
 - **FR-023**: System MUST calculate scores using the formula:
-  `puntos_base × porcentaje_correcto + nivel_bonus + factor_tiempo × segundos_restantes - errores × penalidad_por_error`, capped by `cap_por_dificultad`
-  - Where `porcentaje_correcto` = (número de celdas correctas colocadas por el jugador / total de celdas del puzzle)
-  - Where `segundos_restantes` = max(0, tiempo_limite - tiempo_transcurrido)
-- **FR-024**: System MUST use difficulty-specific constants for scoring:
-  - `puntos_base`: fácil=500, media=1000, difícil=2000, experto=3000, maestra=4000, extrema=5000
-  - `nivel_bonus`: fácil=100, media=200, difícil=300, experto=400, maestra=450, extrema=500
-  - `tiempo_limite`: fácil=180s, media=300s, difícil=480s, experto=600s, maestra=720s, extrema=900s
-  - `factor_tiempo`: 1 point per second remaining
-  - `penalidad_por_error`: 5 points per error
-  - `cap_por_dificultad`: fácil=1000, media=2000, difícil=4000, experto=6000, maestra=8000, extrema=10000
+  `base_points × correct_percentage + level_bonus + time_factor × seconds_remaining - errors × error_penalty`, capped by `difficulty_cap`
+  - Where `correct_percentage` = (number of correct cells placed by player / total puzzle cells)
+  - Where `seconds_remaining` = max(0, time_limit - time_elapsed)
+  - **Note**: Implementation uses English variable names as shown above. Spanish equivalents: puntos_base=base_points, porcentaje_correcto=correct_percentage, nivel_bonus=level_bonus, factor_tiempo=time_factor, segundos_restantes=seconds_remaining, penalidad_por_error=error_penalty, cap_por_dificultad=difficulty_cap
+- **FR-024**: System MUST use difficulty-specific constants for scoring (initial implementation):
+  - `base_points`: easy=500, medium=1000, hard=2000, expert=3000
+  - `level_bonus`: easy=100, medium=200, hard=300, expert=400
+  - `time_limit`: easy=180s, medium=300s, hard=480s, expert=600s
+  - `time_factor`: 1 point per second remaining
+  - `error_penalty`: 5 points per error
+  - `difficulty_cap`: easy=1000, medium=2000, hard=4000, expert=6000
 - **FR-025**: System MUST display current score in real-time as players make moves
 - **FR-026**: System MUST NOT deduct points for incorrect moves (penalty is cooldown only)
 - **FR-026a**: System MUST calculate individual player scores based only on the cells they personally filled correctly (not team contribution)
@@ -199,7 +200,7 @@ Once the Sudoku is completed, players can view a timeline replay showing every m
 - **FR-035**: System MUST track and display total error count per player across all games (publicly visible)
 - **FR-036**: System MUST track and display error count per player per room (publicly visible)
 - **FR-037**: System MUST display the number of games played by each player (publicly visible)
-- **FR-038**: System MUST update rankings in near real-time as games complete
+- **FR-038**: System MUST update rankings within 60 seconds as games complete (leaderboard materialized view refreshed every 60 seconds)
 - **FR-038a**: System MUST provide publicly accessible player profiles showing: username, total points, total errors, games played, average score, win rate, and complete game history
 - **FR-038b**: System MUST allow any user to view detailed statistics and game history of any other player
 
@@ -229,9 +230,9 @@ Once the Sudoku is completed, players can view a timeline replay showing every m
 
 - **Player**: Represents a user account. Attributes: unique ID, username/display name, account type (registered/oauth/guest), authentication provider (if OAuth), email (if registered), total points, total errors, games played, registration date, is_temporary flag (true for guests)
 
-- **Game Room**: Represents a single Sudoku game instance. Attributes: unique ID, room name (max 30 characters, alphanumeric + emojis), grid size (9-100), difficulty level, creation timestamp, completion timestamp, creator player ID, game status (waiting/in-progress/completed), timer value
+- **Game Room**: Represents a single Sudoku game instance. Attributes: unique ID, room name (max 30 characters, alphanumeric + spaces + emojis), grid size (9x9 only in initial implementation), difficulty level, creation timestamp, completion timestamp, creator player ID, game status (waiting/in-progress/completed), timer value
 
-- **Puzzle**: Represents the Sudoku puzzle configuration. Attributes: grid size, initial cell values (problem definition), solution (complete correct state), difficulty level
+- **Puzzle**: Represents the Sudoku puzzle configuration. Attributes: grid size (9x9), initial cell values (problem definition), solution (complete correct state), difficulty level (easy/medium/hard/expert)
 
 - **Move**: Represents a single player action. Attributes: move ID, game room ID, player ID, cell position (row, column), number placed, timestamp, is_correct flag, validation response time
 
