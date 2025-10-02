@@ -17,6 +17,8 @@ defmodule SudokuVersus.Games.GameRoom do
     field :visibility, Ecto.Enum, values: [:public, :private], default: :public
     field :current_players_count, :integer, default: 0
     field :total_moves_count, :integer, default: 0
+    field :started_at, :utc_datetime
+    field :completed_at, :utc_datetime
 
     belongs_to :creator, SudokuVersus.Accounts.User
     belongs_to :puzzle, SudokuVersus.Games.Puzzle

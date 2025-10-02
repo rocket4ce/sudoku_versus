@@ -242,7 +242,7 @@
   - **Verify**: T020 move recording tests pass
   - **Dependencies**: T012, T032, T033, T035
 
-- [ ] **T036a** Implement game timer tracking
+- [X] **T036a** Implement game timer tracking
   - **File**: `lib/sudoku_versus/games.ex`
   - **Details**: Add started_at timestamp to game_rooms on first move, calculate elapsed_time in player sessions, broadcast timer updates via PubSub every 1 second
   - **Verify**: FR-006 game timer starts on first move and updates in real-time
@@ -344,13 +344,13 @@
 ## Phase 3.4: Integration & Real-Time Features
 
 ### PubSub Integration
-- [ ] **T052** Add PubSub broadcasting to record_move/3
+- [X] **T052** Add PubSub broadcasting to record_move/3
   - **File**: `lib/sudoku_versus/games.ex`
   - **Details**: After recording move, broadcast {:new_move, move_id} to "game_room:#{room_id}" topic
   - **Verify**: T027 multiplayer test passes (real-time sync)
   - **Dependencies**: T036, T045
 
-- [ ] **T053** Add Presence tracking to GameLive.Show mount
+- [X] **T053** Add Presence tracking to GameLive.Show mount
   - **File**: `lib/sudoku_versus_web/live/game_live/show.ex`
   - **Details**: Track player presence on mount when connected?(socket), handle presence_diff for player count updates
   - **Verify**: T028 presence test passes

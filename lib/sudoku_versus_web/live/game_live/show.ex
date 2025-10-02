@@ -26,6 +26,11 @@ defmodule SudokuVersusWeb.GameLive.Show do
       moves = Games.get_room_moves(room_id)
       presences = Presence.list("game_room:#{room_id}")
 
+      # Schedule timer tick if game has started
+      if connected?(socket) && room.started_at do
+        Process.send_after(self(), :tick_timer, 1000)
+      end
+
       socket =
         socket
         |> assign(:page_title, room.name)
@@ -36,6 +41,7 @@ defmodule SudokuVersusWeb.GameLive.Show do
         |> assign(:puzzle, room.puzzle)
         |> assign(:grid, room.puzzle.grid)
         |> assign(:players_online_count, map_size(presences))
+        |> assign(:elapsed_seconds, calculate_elapsed_seconds(room))
         |> stream(:moves, moves)
         |> stream(:players, extract_players(presences))
 
@@ -93,7 +99,7 @@ defmodule SudokuVersusWeb.GameLive.Show do
 
   @impl true
   def handle_info({:new_move, move_id}, socket) do
-    # Another player made a move, fetch and add to stream
+    # Another player made a move, fetch and add to stream (with player preloaded)
     moves = Games.get_room_moves(socket.assigns.room_id, limit: 1)
 
     case moves do
@@ -106,7 +112,21 @@ defmodule SudokuVersusWeb.GameLive.Show do
   end
 
   @impl true
-  def handle_info(%{event: "presence_diff", payload: _diff}, socket) do
+  def handle_info(%Phoenix.Socket.Broadcast{event: "presence_diff"}, socket) do
+    # Update player count and list when presence changes
+    presences = Presence.list("game_room:#{socket.assigns.room_id}")
+
+    socket =
+      socket
+      |> assign(:players_online_count, map_size(presences))
+      |> stream(:players, extract_players(presences), reset: true)
+
+    {:noreply, socket}
+  end
+
+  # Handle test-injected presence_diff messages
+  @impl true
+  def handle_info({:presence_diff, _diff}, socket) do
     # Update player count and list
     presences = Presence.list("game_room:#{socket.assigns.room_id}")
 
@@ -116,6 +136,19 @@ defmodule SudokuVersusWeb.GameLive.Show do
       |> stream(:players, extract_players(presences), reset: true)
 
     {:noreply, socket}
+  end
+
+  @impl true
+  def handle_info(:tick_timer, socket) do
+    room = socket.assigns.room
+    elapsed_seconds = calculate_elapsed_seconds(room)
+
+    # Schedule next tick if game is still active
+    if room.started_at && !room.completed_at do
+      Process.send_after(self(), :tick_timer, 1000)
+    end
+
+    {:noreply, assign(socket, :elapsed_seconds, elapsed_seconds)}
   end
 
   # Private helper functions
@@ -149,5 +182,11 @@ defmodule SudokuVersusWeb.GameLive.Show do
         joined_at: Map.get(meta, :joined_at)
       }
     end)
+  end
+
+  defp calculate_elapsed_seconds(%{started_at: nil}), do: 0
+
+  defp calculate_elapsed_seconds(%{started_at: started_at}) do
+    DateTime.diff(DateTime.utc_now(), started_at, :second)
   end
 end

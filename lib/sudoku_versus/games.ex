@@ -178,7 +178,8 @@ defmodule SudokuVersus.Games do
           # Update player session stats
           update_session_stats(session, move_data)
 
-          # Increment room move count
+          # Increment room move count and start timer on first move
+          maybe_start_game_timer(room)
           increment_room_moves(room_id)
 
           {:ok, move}
@@ -252,6 +253,14 @@ defmodule SudokuVersus.Games do
     |> PlayerSession.changeset(new_stats)
     |> Repo.update()
   end
+
+  defp maybe_start_game_timer(%GameRoom{started_at: nil, id: room_id}) do
+    # Start timer on first move
+    from(r in GameRoom, where: r.id == ^room_id)
+    |> Repo.update_all(set: [started_at: DateTime.utc_now()])
+  end
+
+  defp maybe_start_game_timer(_room), do: :ok
 
   defp increment_room_moves(room_id) do
     from(r in GameRoom, where: r.id == ^room_id)
