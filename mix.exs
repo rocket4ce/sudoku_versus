@@ -10,7 +10,7 @@ defmodule SudokuVersus.MixProject do
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps(),
-      compilers: [:phoenix_live_view] ++ Mix.compilers(),
+      compilers: Mix.compilers() ++ [:phoenix_live_view],
       listeners: [Phoenix.CodeReloader]
     ]
   end
@@ -65,7 +65,8 @@ defmodule SudokuVersus.MixProject do
       {:gettext, "~> 0.26"},
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.2.0"},
-      {:bandit, "~> 1.5"}
+      {:bandit, "~> 1.5"},
+      {:rustler, "~> 0.30"}
     ]
   end
 

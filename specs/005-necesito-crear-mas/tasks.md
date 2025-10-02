@@ -45,25 +45,29 @@
 
 ## Phase 3.1: Setup
 
-- [ ] **T001** Initialize Rust NIF project structure using `mix rustler.new`
+- [x] **T001** Initialize Rust NIF project structure using `mix rustler.new`
   - **Files**: `native/sudoku_generator/Cargo.toml`, `native/sudoku_generator/src/lib.rs`
   - **Action**: Run `mix rustler.new sudoku_generator` to generate NIF project
   - **Validation**: `cargo --version` succeeds, Cargo.toml exists
+  - **Status**: ✅ COMPLETED - Created Rust NIF structure with Cargo.toml and lib.rs
 
-- [ ] **T002** Add Rustler dependency to mix.exs
+- [x] **T002** Add Rustler dependency to mix.exs
   - **Files**: `mix.exs`
   - **Action**: Add `{:rustler, "~> 0.30"}` to deps, configure rustler settings
   - **Validation**: `mix deps.get` succeeds, Rustler compiles
+  - **Status**: ✅ COMPLETED - Added Rustler 0.37.1, configured rust_crates in project config
 
-- [ ] **T003** Configure Rust compiler for dirty schedulers and optimization
+- [x] **T003** Configure Rust compiler for dirty schedulers and optimization
   - **Files**: `native/sudoku_generator/Cargo.toml`
   - **Action**: Set `opt-level = 3`, enable LTO, configure profile.release
   - **Validation**: `cargo build --release` succeeds
+  - **Status**: ✅ COMPLETED - Configured release profile with opt-level=3, LTO enabled
 
-- [ ] **T004** Create database migration for puzzle size support
-  - **Files**: `priv/repo/migrations/XXX_add_puzzle_size_support.exs`
+- [x] **T004** Create database migration for puzzle size support
+  - **Files**: `priv/repo/migrations/20251002051708_add_puzzle_size_support.exs`
   - **Action**: Add `size`, `sub_grid_size` columns to puzzles table, update indexes
   - **Validation**: `mix ecto.migrate` succeeds, schema updated
+  - **Status**: ✅ COMPLETED - Migration created with size fields, constraints, and indexes
 
 ---
 

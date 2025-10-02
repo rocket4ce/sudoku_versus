@@ -35,3 +35,22 @@ sudoku_versus-*.tar
 npm-debug.log
 /assets/node_modules/
 
+# Rust/Rustler related files
+# Compiled native libraries (NIF artifacts)
+/priv/native/*.so
+/priv/native/*.dll
+/priv/native/*.dylib
+
+# Rust build artifacts
+/native/**/target/
+/native/**/.cargo/
+
+# Rust debug artifacts
+**/*.rs.bk
+**/*.pdb
+
+# Rust profiling and coverage
+/native/**/profiling/
+/native/**/coverage/
+*.profraw
+*.profdata
