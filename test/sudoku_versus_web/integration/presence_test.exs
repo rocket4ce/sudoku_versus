@@ -13,7 +13,7 @@ defmodule SudokuVersusWeb.Integration.PresenceTest do
   4. LiveView handles presence_diff messages
   """
 
-  test "presence count increases when player joins room", %{conn: conn} do
+  test "presence count increases when player joins room", _context do
     {:ok, player} = Accounts.create_guest_user(%{username: "presence_joiner"})
     {:ok, puzzle} = Games.create_puzzle(:medium)
     {:ok, room} = Games.create_game_room(%{
@@ -39,11 +39,10 @@ defmodule SudokuVersusWeb.Integration.PresenceTest do
     assert map_size(presences) == 1
 
     # View should show 1 player online
-    html = render(view)
     assert has_element?(view, "#player-list")
   end
 
-  test "presence count decreases when player leaves room", %{conn: conn} do
+  test "presence count decreases when player leaves room", _context do
     {:ok, player} = Accounts.create_guest_user(%{username: "presence_leaver"})
     {:ok, puzzle} = Games.create_puzzle(:easy)
     {:ok, room} = Games.create_game_room(%{
@@ -65,7 +64,7 @@ defmodule SudokuVersusWeb.Integration.PresenceTest do
     assert map_size(presences) == 1
 
     # Player leaves (stop the LiveView process)
-    stop(view)
+    GenServer.stop(view.pid)
 
     :timer.sleep(100)
 
@@ -74,7 +73,7 @@ defmodule SudokuVersusWeb.Integration.PresenceTest do
     assert map_size(presences) == 0
   end
 
-  test "multiple players tracked correctly", %{conn: conn} do
+  test "multiple players tracked correctly", _context do
     {:ok, player1} = Accounts.create_guest_user(%{username: "multi_player_1"})
     {:ok, player2} = Accounts.create_guest_user(%{username: "multi_player_2"})
     {:ok, player3} = Accounts.create_guest_user(%{username: "multi_player_3"})
@@ -120,7 +119,7 @@ defmodule SudokuVersusWeb.Integration.PresenceTest do
     assert html2 =~ "multi_player_3"
   end
 
-  test "presence_diff message updates player list in LiveView", %{conn: conn} do
+  test "presence_diff message updates player list in LiveView", _context do
     {:ok, player_a} = Accounts.create_guest_user(%{username: "diff_player_a"})
     {:ok, player_b} = Accounts.create_guest_user(%{username: "diff_player_b"})
 
@@ -148,7 +147,7 @@ defmodule SudokuVersusWeb.Integration.PresenceTest do
     assert html_a =~ "diff_player_b"
   end
 
-  test "presence metadata includes player information", %{conn: conn} do
+  test "presence metadata includes player information", _context do
     {:ok, player} = Accounts.create_guest_user(%{username: "metadata_player"})
     {:ok, puzzle} = Games.create_puzzle(:medium)
     {:ok, room} = Games.create_game_room(%{
@@ -178,7 +177,7 @@ defmodule SudokuVersusWeb.Integration.PresenceTest do
     assert Map.has_key?(meta, :username) or Map.has_key?(meta, :player_id)
   end
 
-  test "presence handles player reconnection", %{conn: conn} do
+  test "presence handles player reconnection", _context do
     {:ok, player} = Accounts.create_guest_user(%{username: "reconnect_player"})
     {:ok, puzzle} = Games.create_puzzle(:easy)
     {:ok, room} = Games.create_game_room(%{
@@ -197,7 +196,7 @@ defmodule SudokuVersusWeb.Integration.PresenceTest do
     assert map_size(Presence.list(topic)) == 1
 
     # Player disconnects
-    stop(view1)
+    GenServer.stop(view1.pid)
 
     :timer.sleep(50)
     assert map_size(Presence.list(topic)) == 0

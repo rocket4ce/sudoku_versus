@@ -72,7 +72,7 @@ defmodule SudokuVersusWeb.Integration.GuestFlowTest do
     # Create a room first
     {:ok, creator} = Accounts.create_guest_user(%{username: "room_creator"})
     {:ok, puzzle} = Games.create_puzzle(:easy)
-    {:ok, room} = Games.create_game_room(%{
+    {:ok, _room} = Games.create_game_room(%{
       name: "Existing Room",
       creator_id: creator.id,
       puzzle_id: puzzle.id
@@ -132,13 +132,13 @@ defmodule SudokuVersusWeb.Integration.GuestFlowTest do
   end
 
   # Helper functions
-  defp extract_room_id_from_path(view) do
+  defp extract_room_id_from_path(_view) do
     # Extract room ID from current path
     # This is a simplified version - actual implementation may vary
     Ecto.UUID.generate()
   end
 
-  defp extract_score(html) do
+  defp extract_score(_html) do
     # Extract score from HTML (simplified)
     # Actual implementation would parse HTML to find score value
     0
