@@ -12,6 +12,9 @@ defmodule SudokuVersus.Games.PlayerSession do
   @foreign_key_type :binary_id
 
   schema "player_sessions" do
+    field :started_at, :utc_datetime
+    field :last_activity_at, :utc_datetime
+    field :is_active, :boolean, default: true
     field :current_score, :integer, default: 0
     field :current_streak, :integer, default: 0
     field :longest_streak, :integer, default: 0
@@ -19,7 +22,6 @@ defmodule SudokuVersus.Games.PlayerSession do
     field :incorrect_moves_count, :integer, default: 0
     field :cells_filled, :integer, default: 0
     field :completed_puzzle, :boolean, default: false
-    field :is_active, :boolean, default: true
 
     belongs_to :player, SudokuVersus.Accounts.User
     belongs_to :game_room, SudokuVersus.Games.GameRoom
@@ -33,9 +35,27 @@ defmodule SudokuVersus.Games.PlayerSession do
   Changeset for creating a new player session.
   """
   def changeset(player_session, attrs) do
+    now = DateTime.utc_now()
+    attrs = attrs
+    |> Map.put_new(:started_at, now)
+    |> Map.put_new(:last_activity_at, now)
+
     player_session
-    |> cast(attrs, [:player_id, :game_room_id])
-    |> validate_required([:player_id, :game_room_id])
+    |> cast(attrs, [
+      :player_id,
+      :game_room_id,
+      :started_at,
+      :last_activity_at,
+      :is_active,
+      :current_score,
+      :current_streak,
+      :longest_streak,
+      :correct_moves_count,
+      :incorrect_moves_count,
+      :cells_filled,
+      :completed_puzzle
+    ])
+    |> validate_required([:player_id, :game_room_id, :started_at, :last_activity_at])
     |> foreign_key_constraint(:player_id)
     |> foreign_key_constraint(:game_room_id)
     |> unique_constraint([:player_id, :game_room_id],

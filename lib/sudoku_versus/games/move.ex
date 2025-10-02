@@ -23,7 +23,7 @@ defmodule SudokuVersus.Games.Move do
     belongs_to :game_room, SudokuVersus.Games.GameRoom
     belongs_to :player_session, SudokuVersus.Games.PlayerSession
 
-    timestamps()
+    timestamps(type: :utc_datetime)
   end
 
   @doc """
