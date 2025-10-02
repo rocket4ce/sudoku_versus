@@ -83,7 +83,9 @@ Once the Sudoku is completed, players can view a timeline replay showing every m
 
 7. **Given** a completed game, **When** a player opens the timeline replay, **Then** they see the room name, a progress bar, and can scrub through the timeline to see each move in chronological order with player attribution
 
-8. **Given** multiple completed games, **When** a player views the rankings page, **Then** they see leaderboards showing: total player points, points per room, total errors, errors per room, and number of games played
+8. **Given** multiple completed games, **When** a player views the rankings page, **Then** they see leaderboards showing: total player points, points per room, total errors, errors per room, and number of games played (all data publicly visible for all players)
+
+9. **Given** a player viewing another player's profile, **When** they access the profile, **Then** they see complete statistics including: username, total points, total errors, games played, average score, and clickable game history with access to all past games and replays
 
 ### Edge Cases
 
@@ -111,6 +113,12 @@ Once the Sudoku is completed, players can view a timeline replay showing every m
 - What happens when **a player uses special Unicode characters or emojis in the room name**?
   - The system accepts all valid Unicode characters including emojis as long as the total character count (not byte count) is ≤30. Display rendering handles proper emoji presentation across different devices.
 
+- What happens when **the system reaches its baseline capacity limits** (100 rooms or 1000 players)?
+  - The system automatically triggers infrastructure scaling to expand capacity. No users are rejected. During scaling (typically < 30 seconds), the system continues accepting new connections/rooms at slightly reduced performance. Players see no error messages related to capacity.
+
+- What happens when **a guest player wants privacy for their statistics**?
+  - All player data (including guest players) is publicly visible by design. Guest players are informed during initial access that their gameplay data will be publicly visible. If they want privacy, they should not participate or should accept the public nature of the platform.
+
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
@@ -127,8 +135,17 @@ Once the Sudoku is completed, players can view a timeline replay showing every m
 - **FR-006**: System MUST initialize a game timer that starts when the first move is made
 - **FR-007**: System MUST display the room name in the game interface, room lists, and replay timeline
 
+#### Authentication & User Management
+- **FR-007a**: System MUST support traditional user registration with email and password
+- **FR-007b**: System MUST support OAuth authentication via external providers (e.g., Google, GitHub)
+- **FR-007c**: System MUST allow guest/anonymous access without registration
+- **FR-007d**: System MUST allow guest players to convert to registered accounts, preserving their current session data
+- **FR-007e**: System MUST persist statistics, rankings, and game history for registered and OAuth users
+- **FR-007f**: System MUST assign temporary identifiers to guest players for the duration of their session
+- **FR-007g**: System MUST display clear indicators distinguishing registered users from guest players in game rooms and leaderboards
+
 #### Real-Time Multiplayer
-- **FR-008**: System MUST allow multiple players to join an incomplete game room
+- **FR-008**: System MUST allow unlimited players to join an incomplete game room (no maximum player cap per room)
 - **FR-009**: System MUST broadcast all valid moves to all connected players in real-time (< 200ms latency)
 - **FR-010**: System MUST display the number of currently online players in each game room
 - **FR-011**: System MUST prevent players from joining completed games (except as spectators)
@@ -149,7 +166,10 @@ Once the Sudoku is completed, players can view a timeline replay showing every m
 - **FR-022**: System MUST award points to players for each correct number placed
 - **FR-023**: System MUST calculate scores using the formula:
   `puntos_base × porcentaje_correcto + nivel_bonus + factor_tiempo × segundos_restantes - errores × penalidad_por_error`, capped by `cap_por_dificultad`
+  - Where `porcentaje_correcto` = (número de celdas correctas colocadas por el jugador / total de celdas del puzzle)
+  - Where `segundos_restantes` = max(0, tiempo_limite - tiempo_transcurrido)
 - **FR-024**: System MUST use difficulty-specific constants for scoring:
+  - `puntos_base`: fácil=500, media=1000, difícil=2000, experto=3000, maestra=4000, extrema=5000
   - `nivel_bonus`: fácil=100, media=200, difícil=300, experto=400, maestra=450, extrema=500
   - `tiempo_limite`: fácil=180s, media=300s, difícil=480s, experto=600s, maestra=720s, extrema=900s
   - `factor_tiempo`: 1 point per second remaining
@@ -157,6 +177,13 @@ Once the Sudoku is completed, players can view a timeline replay showing every m
   - `cap_por_dificultad`: fácil=1000, media=2000, difícil=4000, experto=6000, maestra=8000, extrema=10000
 - **FR-025**: System MUST display current score in real-time as players make moves
 - **FR-026**: System MUST NOT deduct points for incorrect moves (penalty is cooldown only)
+- **FR-026a**: System MUST calculate individual player scores based only on the cells they personally filled correctly (not team contribution)
+
+**Scoring Example:** For a player on difficulty "media" (1000 puntos_base, 300s tiempo_limite) who correctly placed 40 out of 81 cells in a 9x9 puzzle, completed in 240 seconds with 3 errors:
+- `porcentaje_correcto` = 40/81 = 0.494
+- `segundos_restantes` = 300 - 240 = 60s
+- Score = 1000 × 0.494 + 200 + 1 × 60 - 3 × 5 = 494 + 200 + 60 - 15 = 739 points
+- Final score = 739 (under the 2000 cap for media)
 
 #### Timeline Replay
 - **FR-027**: System MUST record all moves in chronological order for completed games
@@ -167,12 +194,14 @@ Once the Sudoku is completed, players can view a timeline replay showing every m
 - **FR-032**: System MUST display the room name in the timeline replay interface
 
 #### Rankings & Statistics
-- **FR-033**: System MUST maintain a global leaderboard showing player rankings by total points
-- **FR-034**: System MUST display per-room leaderboards showing player scores and room names for specific games
-- **FR-035**: System MUST track and display total error count per player across all games
-- **FR-036**: System MUST track and display error count per player per room
-- **FR-037**: System MUST display the number of games played by each player
+- **FR-033**: System MUST maintain a global leaderboard showing player rankings by total points (publicly visible to all users)
+- **FR-034**: System MUST display per-room leaderboards showing player scores and room names for specific games (publicly visible)
+- **FR-035**: System MUST track and display total error count per player across all games (publicly visible)
+- **FR-036**: System MUST track and display error count per player per room (publicly visible)
+- **FR-037**: System MUST display the number of games played by each player (publicly visible)
 - **FR-038**: System MUST update rankings in near real-time as games complete
+- **FR-038a**: System MUST provide publicly accessible player profiles showing: username, total points, total errors, games played, average score, win rate, and complete game history
+- **FR-038b**: System MUST allow any user to view detailed statistics and game history of any other player
 
 #### Game Room Visibility
 - **FR-039**: System MUST display the room name in the game interface header
@@ -183,9 +212,12 @@ Once the Sudoku is completed, players can view a timeline replay showing every m
 ### Performance Requirements
 - **PR-001**: System MUST validate moves within 100ms under normal load
 - **PR-002**: System MUST broadcast updates to all connected players within 200ms
-- **PR-003**: System MUST support at least 100 concurrent game rooms
-- **PR-004**: System MUST support at least 1000 concurrent connected players
+- **PR-003**: System MUST support at least 100 concurrent game rooms as baseline capacity
+- **PR-004**: System MUST support at least 1000 concurrent connected players as baseline capacity
 - **PR-005**: System MUST handle reconnection attempts within 2 seconds
+- **PR-006**: System MUST automatically scale infrastructure capacity when approaching 80% of current limits
+- **PR-007**: System MUST maintain performance targets (PR-001, PR-002, PR-005) during scaling operations
+- **PR-008**: System MUST complete scaling operations without interrupting active game sessions
 
 ### Reliability Requirements
 - **RR-001**: System MUST maintain 99.5% uptime during normal operations
@@ -195,7 +227,7 @@ Once the Sudoku is completed, players can view a timeline replay showing every m
 
 ### Key Entities *(include if feature involves data)*
 
-- **Player**: Represents a user account. Attributes: unique ID, username/display name, total points, total errors, games played, registration date
+- **Player**: Represents a user account. Attributes: unique ID, username/display name, account type (registered/oauth/guest), authentication provider (if OAuth), email (if registered), total points, total errors, games played, registration date, is_temporary flag (true for guests)
 
 - **Game Room**: Represents a single Sudoku game instance. Attributes: unique ID, room name (max 30 characters, alphanumeric + emojis), grid size (9-100), difficulty level, creation timestamp, completion timestamp, creator player ID, game status (waiting/in-progress/completed), timer value
 
@@ -211,13 +243,30 @@ Once the Sudoku is completed, players can view a timeline replay showing every m
 
 ### Constraints & Assumptions
 
-- Players must be authenticated to create or join games
+- System supports multiple authentication methods: traditional registration (email/password), OAuth (social login), and guest/anonymous access
+- Authenticated players (registered or OAuth) have persistent accounts with saved statistics and progress
+- Guest players can play without registration but lose progress when session ends unless they convert to registered accounts
 - Puzzle generation algorithms must produce valid, solvable puzzles
 - Real-time updates use WebSocket or Phoenix Channels
 - Move validation is authoritative on the server (no client-side trust)
 - Completed games are immutable (no moves can be modified)
 - Timeline replay data is retained indefinitely or until storage limits require archival
 - Network partitions may cause temporary inconsistencies but will eventually reconcile
+- System architecture must support horizontal scaling (adding more server instances) to handle unlimited growth
+- Baseline capacity targets (100 rooms, 1000 players) are minimum performance guarantees, not hard limits
+- All player statistics, rankings, and game history are publicly visible to all users (no privacy settings or data hiding)
+- Guest players' temporary data is also publicly visible during their session
+
+---
+
+## Clarifications
+
+### Session 2025-10-01
+- Q: ¿Cuál es el número máximo de jugadores que pueden participar simultáneamente en una misma sala de juego? → A: Sin límite - Cualquier número de jugadores puede unirse a una sala
+- Q: ¿Cómo se manejan las cuentas de usuario y la autenticación en el sistema? → A: Mixto - Soporta múltiples métodos (registro tradicional + OAuth + invitados)
+- Q: ¿Qué debe suceder cuando el sistema alcanza su capacidad máxima (100 salas concurrentes o 1000 jugadores conectados)? → A: Escalar automáticamente - El sistema debe expandir capacidad automáticamente sin límite fijo
+- Q: ¿Qué información de otros jugadores debe ser visible públicamente en rankings y perfiles? → A: Todo público - Username, puntos totales, errores, historial de juegos, estadísticas completas visibles para todos
+- Q: ¿Cuál es el valor de puntos_base en la fórmula de scoring? → A: Varía por dificultad - fácil=500, media=1000, difícil=2000, experto=3000, maestra=4000, extrema=5000
 
 ---
 
