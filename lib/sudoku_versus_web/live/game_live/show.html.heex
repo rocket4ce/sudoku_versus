@@ -1,0 +1,173 @@
+<.header>
+  {@room.name}
+  <:subtitle>
+    <span class="badge badge-primary">{String.capitalize(to_string(@puzzle.difficulty))}</span>
+    <span class="ml-2">{@players_online_count} player<%= if @players_online_count != 1, do: "s" %> online</span>
+  </:subtitle>
+  <:actions>
+    <.link navigate={~p"/game"} class="btn btn-ghost btn-sm">
+      ← Back to Lobby
+    </.link>
+  </:actions>
+</.header>
+
+<div class="mt-8 grid lg:grid-cols-3 gap-8">
+  <%!-- Sudoku Grid (Main Area) --%>
+  <div class="lg:col-span-2">
+    <div class="card bg-base-100 shadow-xl">
+      <div class="card-body">
+        <h2 class="card-title">Sudoku Puzzle</h2>
+        
+        <%!-- Grid --%>
+        <div id="sudoku-grid" class="inline-block mx-auto">
+          <div class="grid grid-cols-9 gap-0 border-4 border-gray-800">
+            <%= for row <- 0..8 do %>
+              <%= for col <- 0..8 do %>
+                <div class={[
+                  "w-12 h-12 border border-gray-300 flex items-center justify-center",
+                  "text-lg font-semibold",
+                  col != 0 && rem(col, 3) == 0 && "border-l-2 border-l-gray-800",
+                  row != 0 && rem(row, 3) == 0 && "border-t-2 border-t-gray-800"
+                ]}>
+                  <%= case Enum.at(Enum.at(@grid, row), col) do %>
+                    <% 0 -> %>
+                      <input
+                        type="number"
+                        min="1"
+                        max="9"
+                        phx-blur="submit_move"
+                        phx-value-row={row}
+                        phx-value-col={col}
+                        class="w-full h-full text-center bg-white focus:bg-blue-50 border-0 focus:ring-2 focus:ring-blue-500"
+                      />
+                    <% value -> %>
+                      <span class="text-gray-900 font-bold">{value}</span>
+                  <% end %>
+                </div>
+              <% end %>
+            <% end %>
+          </div>
+        </div>
+
+        <%!-- Move Form (alternative input) --%>
+        <div class="mt-6 p-4 bg-base-200 rounded-lg">
+          <h3 class="font-semibold mb-2">Quick Submit Move</h3>
+          <form id="move-form" phx-submit="submit_move" class="flex gap-2">
+            <input
+              type="number"
+              name="row"
+              placeholder="Row (0-8)"
+              min="0"
+              max="8"
+              class="input input-bordered input-sm flex-1"
+              required
+            />
+            <input
+              type="number"
+              name="col"
+              placeholder="Col (0-8)"
+              min="0"
+              max="8"
+              class="input input-bordered input-sm flex-1"
+              required
+            />
+            <input
+              type="number"
+              name="value"
+              placeholder="Value (1-9)"
+              min="1"
+              max="9"
+              class="input input-bordered input-sm flex-1"
+              required
+            />
+            <button type="submit" class="btn btn-primary btn-sm">
+              Submit
+            </button>
+          </form>
+        </div>
+
+        <%!-- Current Score --%>
+        <div id="score-display" class="mt-4 stats shadow">
+          <div class="stat">
+            <div class="stat-title">Your Score</div>
+            <div class="stat-value text-primary">{@session.current_score}</div>
+            <div class="stat-desc">
+              Streak: {@session.current_streak} | 
+              Correct: {@session.correct_moves_count} | 
+              Wrong: {@session.incorrect_moves_count}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%!-- Sidebar --%>
+  <div class="space-y-6">
+    <%!-- Players Online --%>
+    <div class="card bg-base-100 shadow-xl">
+      <div class="card-body">
+        <h3 class="card-title text-base">
+          <.icon name="hero-user-group" class="w-5 h-5" />
+          Players Online ({@players_online_count})
+        </h3>
+        
+        <div id="player-list" phx-update="stream" class="space-y-2">
+          <div
+            :for={{id, player} <- @streams.players}
+            id={id}
+            class="flex items-center gap-2 p-2 bg-base-200 rounded"
+          >
+            <.icon name="hero-user-circle" class="w-6 h-6" />
+            <span class="text-sm font-medium">{player.username}</span>
+          </div>
+        </div>
+
+        <div :if={@players_online_count == 0} class="text-sm text-gray-500 text-center py-4">
+          No other players online
+        </div>
+      </div>
+    </div>
+
+    <%!-- Move History --%>
+    <div class="card bg-base-100 shadow-xl">
+      <div class="card-body">
+        <h3 class="card-title text-base">
+          <.icon name="hero-clock" class="w-5 h-5" />
+          Recent Moves
+        </h3>
+        
+        <div id="move-list" phx-update="stream" class="space-y-2 max-h-96 overflow-y-auto">
+          <div
+            :for={{id, move} <- @streams.moves}
+            id={id}
+            class={[
+              "p-2 rounded text-sm",
+              move.is_correct && "bg-green-50 border border-green-200",
+              !move.is_correct && "bg-red-50 border border-red-200"
+            ]}
+          >
+            <div class="flex items-center justify-between">
+              <span class="font-medium">{move.player.username}</span>
+              <span class={[
+                "badge badge-sm",
+                move.is_correct && "badge-success",
+                !move.is_correct && "badge-error"
+              ]}>
+                {if move.is_correct, do: "+#{move.points_earned}", else: "✗"}
+              </span>
+            </div>
+            <div class="text-xs text-gray-600 mt-1">
+              ({move.row}, {move.col}) → {move.value}
+            </div>
+          </div>
+        </div>
+
+        <%!-- Empty state shows with CSS when no moves --%>
+        <div class="hidden only:block text-sm text-gray-500 text-center py-4">
+          No moves yet
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

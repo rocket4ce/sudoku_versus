@@ -266,69 +266,69 @@
   - **Dependencies**: T038
 
 ### OAuth Controller
-- [ ] **T041** [P] Implement AuthController
+- [X] **T041** [P] Implement AuthController
   - **File**: `lib/sudoku_versus_web/controllers/auth_controller.ex`
   - **Details**: Implement authorize/2, callback/2, logout/2 actions
   - **Verify**: T021 tests now pass
   - **Dependencies**: T030, T031, T021
 
-- [ ] **T042** Add OAuth routes to router
+- [X] **T042** Add OAuth routes to router
   - **File**: `lib/sudoku_versus_web/router.ex`
   - **Details**: Add scope "/auth" with routes: GET /:provider, GET /:provider/callback, DELETE /logout
   - **Dependencies**: T041
 
 ### LiveView - Room Lobby
-- [ ] **T043** Create GameLive.Index module (room lobby)
+- [X] **T043** Create GameLive.Index module (room lobby)
   - **File**: `lib/sudoku_versus_web/live/game_live/index.ex`
   - **Details**: Implement mount/3, handle_event("create_room"), handle_event("filter"), stream rooms list, create room form with to_form/2
   - **Verify**: T022 tests now pass
   - **Dependencies**: T010, T034, T022
   - **Note**: Use streams for room list, track @rooms_count separately
 
-- [ ] **T044** Create room lobby template
+- [X] **T044** Create room lobby template
   - **File**: `lib/sudoku_versus_web/live/game_live/index.html.heex`
   - **Details**: Room list with streams (#room-list, phx-update="stream"), create room form (#create-room-form), difficulty filter (#filter-difficulty)
   - **Dependencies**: T043
 
 ### LiveView - Game Room
-- [ ] **T045** Create GameLive.Show module (game room)
+- [X] **T045** Create GameLive.Show module (game room)
   - **File**: `lib/sudoku_versus_web/live/game_live/show.ex`
   - **Details**: Implement mount/3 with PubSub subscription + Presence tracking, render grid as regular assign (not stream), handle_event("submit_move"), handle_info({:new_move}), handle_info({:presence_diff}), streams for moves and players
   - **Verify**: T023 tests now pass
   - **Dependencies**: T012, T015, T036, T037, T023
   - **Note**: Grid is fixed 81 cells (regular assign), moves/players use streams
 
-- [ ] **T046** Create game room template
+- [X] **T046** Create game room template
   - **File**: `lib/sudoku_versus_web/live/game_live/show.html.heex`
   - **Details**: Sudoku grid (#sudoku-grid), move form (#move-form), move history stream (#move-list), player list stream (#player-list), score display (#score-display)
   - **Dependencies**: T045
 
 ### LiveView - Leaderboard
-- [ ] **T047** [P] Create LeaderboardLive.Index module
+- [X] **T047** [P] Create LeaderboardLive.Index module
   - **File**: `lib/sudoku_versus_web/live/leaderboard_live/index.ex`
   - **Details**: Implement mount/3, handle_event("filter_difficulty"), stream leaderboard entries, track @leaderboard_count
   - **Verify**: T024 tests now pass
   - **Dependencies**: T014, T039, T024
 
-- [ ] **T048** Create leaderboard template
+- [X] **T048** Create leaderboard template
   - **File**: `lib/sudoku_versus_web/live/leaderboard_live/index.html.heex`
   - **Details**: Leaderboard list with streams (#leaderboard-list), difficulty filter (#difficulty-filter), rank/score display
   - **Dependencies**: T047
 
 ### LiveView - Authentication
-- [ ] **T049** [P] Create AuthLive modules (guest login, registration)
+- [X] **T049** [P] Create AuthLive modules (guest login, registration)
   - **File**: `lib/sudoku_versus_web/live/auth_live/guest.ex`, `lib/sudoku_versus_web/live/auth_live/register.ex`
   - **Details**: Guest login form, registration form with validations, OAuth buttons
   - **Verify**: T025 tests now pass
   - **Dependencies**: T029, T025
 
-- [ ] **T050** Create auth templates
+- [X] **T050** Create auth templates
   - **File**: `lib/sudoku_versus_web/live/auth_live/guest.html.heex`, `lib/sudoku_versus_web/live/auth_live/register.html.heex`
   - **Details**: Guest login form (#guest-login-form), registration form (#register-form), OAuth buttons (#google-oauth-btn, #github-oauth-btn)
   - **Dependencies**: T049
 
 ### Router Configuration
-- [ ] **T051** Add LiveView routes to router
+- [X] **T051** Add LiveView routes to router
   - **File**: `lib/sudoku_versus_web/router.ex`
   - **Details**: Add routes for /, /game (lobby), /game/:id (room), /leaderboard, /login, /register with appropriate live_session scopes
   - **Dependencies**: T043, T045, T047, T049

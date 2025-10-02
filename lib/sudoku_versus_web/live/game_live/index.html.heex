@@ -1,0 +1,128 @@
+<.header>
+  Game Lobby
+  <:subtitle>Join an existing room or create your own</:subtitle>
+</.header>
+
+<div class="mt-8 space-y-8">
+  <%!-- Create Room Form --%>
+  <div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+      <h2 class="card-title">Create New Room</h2>
+      
+      <.form
+        for={@form}
+        id="create-room-form"
+        phx-submit="create_room"
+        class="space-y-4"
+      >
+        <.input
+          field={@form[:name]}
+          type="text"
+          label="Room Name"
+          placeholder="My Awesome Room 🎮"
+          required
+        />
+
+        <.input
+          field={@form[:difficulty]}
+          type="select"
+          label="Difficulty"
+          options={[
+            {"Easy", "easy"},
+            {"Medium", "medium"},
+            {"Hard", "hard"},
+            {"Expert", "expert"}
+          ]}
+          value="medium"
+        />
+
+        <.input
+          field={@form[:visibility]}
+          type="select"
+          label="Visibility"
+          options={[
+            {"Public", "public"},
+            {"Private", "private"}
+          ]}
+          value="public"
+        />
+
+        <div>
+          <.button phx-disable-with="Creating..." class="w-full">
+            Create Room
+          </.button>
+        </div>
+      </.form>
+    </div>
+  </div>
+
+  <%!-- Filter --%>
+  <div class="flex items-center gap-4">
+    <span class="font-semibold">Filter by difficulty:</span>
+    <select
+      id="filter-difficulty"
+      phx-change="filter"
+      name="difficulty"
+      class="select select-bordered"
+    >
+      <option value="">All</option>
+      <option value="easy">Easy</option>
+      <option value="medium">Medium</option>
+      <option value="hard">Hard</option>
+      <option value="expert">Expert</option>
+    </select>
+    
+    <span class="ml-auto text-sm text-gray-600">
+      {@rooms_count} room<%= if @rooms_count != 1, do: "s" %> available
+    </span>
+  </div>
+
+  <%!-- Room List --%>
+  <div id="room-list" phx-update="stream" class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div
+      :for={{id, room} <- @streams.rooms}
+      id={id}
+      class="card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow"
+    >
+      <div class="card-body">
+        <h3 class="card-title text-lg">
+          {room.name}
+        </h3>
+        
+        <div class="flex flex-wrap gap-2 text-sm">
+          <span class="badge badge-primary">
+            {String.capitalize(to_string(room.puzzle.difficulty))}
+          </span>
+          
+          <span class="badge badge-ghost">
+            <.icon name="hero-user-group" class="w-4 h-4 mr-1" />
+            {room.current_players_count} player<%= if room.current_players_count != 1, do: "s" %>
+          </span>
+        </div>
+
+        <p class="text-sm text-gray-600">
+          Created by {room.creator.username}
+        </p>
+
+        <div class="card-actions justify-end mt-4">
+          <.link
+            navigate={~p"/game/#{room.id}"}
+            class="btn btn-primary btn-sm"
+          >
+            Join Room
+          </.link>
+        </div>
+      </div>
+    </div>
+
+    <%!-- Empty state --%>
+    <div
+      :if={@rooms_count == 0}
+      class="col-span-full text-center py-12 text-gray-500"
+    >
+      <.icon name="hero-inbox" class="w-16 h-16 mx-auto mb-4 opacity-50" />
+      <p class="text-lg font-medium">No rooms available</p>
+      <p class="text-sm">Create one to get started!</p>
+    </div>
+  </div>
+</div>

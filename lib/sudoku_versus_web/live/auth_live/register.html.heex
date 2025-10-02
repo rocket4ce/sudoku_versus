@@ -1,0 +1,74 @@
+<.header>
+  Create Account
+  <:subtitle>Register for a full account with email and password</:subtitle>
+</.header>
+
+<div class="max-w-md mx-auto mt-8">
+  <.form
+    for={@form}
+    id="register-form"
+    phx-change="validate"
+    phx-submit="save"
+    class="space-y-4"
+  >
+    <.input
+      field={@form[:username]}
+      type="text"
+      label="Username"
+      placeholder="Choose a username"
+      required
+    />
+
+    <.input
+      field={@form[:email]}
+      type="email"
+      label="Email"
+      placeholder="your@email.com"
+      required
+    />
+
+    <.input
+      field={@form[:password]}
+      type="password"
+      label="Password"
+      placeholder="Minimum 8 characters"
+      required
+    />
+
+    <div>
+      <.button phx-disable-with="Creating account..." class="w-full">
+        Create Account
+      </.button>
+    </div>
+  </.form>
+
+  <div class="mt-6 text-center space-y-4">
+    <div class="text-sm text-gray-600">
+      Or sign up with:
+    </div>
+    
+    <div class="flex gap-4 justify-center">
+      <a
+        href="/auth/google"
+        id="google-oauth-btn"
+        class="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+      >
+        <span class="text-sm font-medium">Google</span>
+      </a>
+      
+      <a
+        href="/auth/github"
+        id="github-oauth-btn"
+        class="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+      >
+        <span class="text-sm font-medium">GitHub</span>
+      </a>
+    </div>
+
+    <div class="pt-4 border-t">
+      <.link navigate={~p"/login/guest"} class="text-sm text-blue-600 hover:underline">
+        ← Join as guest instead
+      </.link>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,96 @@
+<.header>
+  Leaderboard
+  <:subtitle>Top players across all difficulties</:subtitle>
+</.header>
+
+<div class="mt-8 space-y-6">
+  <%!-- Filter --%>
+  <div class="flex items-center gap-4">
+    <span class="font-semibold">Filter by difficulty:</span>
+    <select
+      id="difficulty-filter"
+      phx-change="filter_difficulty"
+      name="difficulty"
+      class="select select-bordered"
+    >
+      <option value="">All</option>
+      <option value="easy">Easy</option>
+      <option value="medium">Medium</option>
+      <option value="hard">Hard</option>
+      <option value="expert">Expert</option>
+    </select>
+    
+    <span class="ml-auto text-sm text-gray-600">
+      Showing top {@leaderboard_count} players
+    </span>
+  </div>
+
+  <%!-- Leaderboard Table --%>
+  <div class="card bg-base-100 shadow-xl">
+    <div class="card-body p-0">
+      <div class="overflow-x-auto">
+        <table class="table table-zebra">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Player</th>
+              <th>Total Score</th>
+              <th>Games</th>
+              <th>Avg Score</th>
+              <th>Best Score</th>
+              <th>Difficulty</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboard-list" phx-update="stream">
+            <tr
+              :for={{id, entry} <- @streams.leaderboard}
+              id={id}
+              class={[
+                entry.rank <= 3 && "bg-yellow-50"
+              ]}
+            >
+              <td>
+                <span class={[
+                  "font-bold",
+                  entry.rank == 1 && "text-yellow-600",
+                  entry.rank == 2 && "text-gray-500",
+                  entry.rank == 3 && "text-orange-600"
+                ]}>
+                  <%= if entry.rank <= 3 do %>
+                    <%= case entry.rank do %>
+                      <% 1 -> %> 🥇
+                      <% 2 -> %> 🥈
+                      <% 3 -> %> 🥉
+                    <% end %>
+                  <% else %>
+                    #<%= entry.rank %>
+                  <% end %>
+                </span>
+              </td>
+              <td class="font-medium">{entry.username}</td>
+              <td class="text-primary font-bold">{entry.total_score}</td>
+              <td>{entry.games_completed}</td>
+              <td>{Float.round(entry.average_score, 1)}</td>
+              <td>{entry.highest_single_score}</td>
+              <td>
+                <span class="badge badge-sm">
+                  {String.capitalize(entry.difficulty)}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <%!-- Empty state --%>
+      <div
+        :if={@leaderboard_count == 0}
+        class="text-center py-12 text-gray-500"
+      >
+        <.icon name="hero-trophy" class="w-16 h-16 mx-auto mb-4 opacity-50" />
+        <p class="text-lg font-medium">No scores yet</p>
+        <p class="text-sm">Be the first to play and get on the leaderboard!</p>
+      </div>
+    </div>
+  </div>
+</div>

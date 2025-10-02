@@ -14,10 +14,32 @@ defmodule SudokuVersusWeb.Router do
     plug :accepts, ["json"]
   end
 
+  # OAuth routes
+  scope "/auth", SudokuVersusWeb do
+    pipe_through :browser
+
+    get "/:provider", AuthController, :authorize
+    get "/:provider/callback", AuthController, :callback
+    delete "/logout", AuthController, :logout
+  end
+
+  # Public routes (no auth required)
   scope "/", SudokuVersusWeb do
     pipe_through :browser
 
     get "/", PageController, :home
+    
+    live "/login/guest", AuthLive.Guest, :new
+    live "/register", AuthLive.Register, :new
+    live "/leaderboard", LeaderboardLive.Index, :index
+  end
+
+  # Protected routes (auth required)
+  scope "/", SudokuVersusWeb do
+    pipe_through :browser
+
+    live "/game", GameLive.Index, :index
+    live "/game/:id", GameLive.Show, :show
   end
 
   # Other scopes may use custom stacks.
