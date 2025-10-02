@@ -255,11 +255,11 @@ tasks = for i <- 1..10 do
   Task.async(fn ->
     size = Enum.random([9, 16, 25])
     difficulty = Enum.random([:easy, :medium, :hard, :expert])
-    
+
     {time_us, result} = :timer.tc(fn ->
       Puzzles.generate_puzzle(size, difficulty)
     end)
-    
+
     {size, difficulty, time_us / 1_000, result}
   end)
 end
