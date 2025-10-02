@@ -12,6 +12,7 @@ defmodule SudokuVersus.Application do
       SudokuVersus.Repo,
       {DNSCluster, query: Application.get_env(:sudoku_versus, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: SudokuVersus.PubSub},
+      SudokuVersusWeb.Presence,
       # Start a worker by calling: SudokuVersus.Worker.start_link(arg)
       # {SudokuVersus.Worker, arg},
       # Start to serve requests, typically the last entry
