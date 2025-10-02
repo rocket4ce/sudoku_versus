@@ -23,14 +23,25 @@ defmodule SudokuVersusWeb.Router do
     delete "/logout", AuthController, :logout
   end
 
+  # Session management route (used by LiveViews to establish sessions)
+  scope "/session", SudokuVersusWeb do
+    pipe_through :browser
+
+    get "/create", SessionController, :create
+    post "/create", SessionController, :create
+  end
+
   # Public routes (no auth required)
   scope "/", SudokuVersusWeb do
     pipe_through :browser
 
     get "/", PageController, :home
 
-    live "/login/guest", AuthLive.Guest, :new
-    live "/register", AuthLive.Register, :new
+    live_session :public do
+      live "/login/guest", AuthLive.Guest, :new
+      live "/register", AuthLive.Register, :new
+    end
+
     live "/leaderboard", LeaderboardLive.Index, :index
   end
 

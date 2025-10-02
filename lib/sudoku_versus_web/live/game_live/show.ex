@@ -220,8 +220,7 @@ defmodule SudokuVersusWeb.GameLive.Show do
         Games.join_room(room_id, user_id)
 
       session ->
-        # Preload player association if needed
-        session = SudokuVersus.Repo.preload(session, :player)
+        # Session already has player preloaded from get_player_session
         {:ok, session}
     end
   end

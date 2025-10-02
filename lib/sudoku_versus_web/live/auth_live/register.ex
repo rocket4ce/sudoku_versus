@@ -30,10 +30,16 @@ defmodule SudokuVersusWeb.AuthLive.Register do
   def handle_event("save", %{"user" => user_params}, socket) do
     case Accounts.register_user(user_params) do
       {:ok, user} ->
+        # Redirect to session controller to set session, then to game
+        form_data = %{
+          "user_id" => user.id,
+          "redirect_to" => ~p"/game"
+        }
+
         {:noreply,
          socket
          |> put_flash(:info, "Account created successfully! Welcome, #{user.username}!")
-         |> push_navigate(to: ~p"/game")}
+         |> redirect(to: ~p"/session/create?#{form_data}")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, :form, to_form(changeset))}

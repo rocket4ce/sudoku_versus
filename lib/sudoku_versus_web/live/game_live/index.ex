@@ -29,7 +29,7 @@ defmodule SudokuVersusWeb.GameLive.Index do
   end
 
   @impl true
-  def handle_event("create_room", %{"room" => room_params}, socket) do
+  def handle_event("create_room", %{"game_room" => room_params}, socket) do
     # Add required fields
     attrs =
       room_params

@@ -83,10 +83,13 @@ defmodule SudokuVersus.Games do
 
   @doc """
   Gets a player session for a room.
+
+  Preloads the player association.
   """
   def get_player_session(room_id, player_id) do
     PlayerSession
     |> where([s], s.game_room_id == ^room_id and s.player_id == ^player_id)
+    |> preload(:player)
     |> Repo.one()
   end
 
@@ -117,6 +120,8 @@ defmodule SudokuVersus.Games do
       {:ok, session} ->
         # Increment room player count
         increment_room_players(room_id, 1)
+        # Preload player association
+        session = Repo.preload(session, :player)
         {:ok, session}
 
       error ->
