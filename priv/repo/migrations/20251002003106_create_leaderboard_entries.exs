@@ -21,9 +21,9 @@ defmodule SudokuVersus.Repo.Migrations.CreateLeaderboardEntries do
         INNER JOIN score_records sr ON sr.player_id = u.id
         WHERE sr.completed_puzzle = true
         GROUP BY u.id, u.username, u.display_name, u.avatar_url, sr.difficulty
-        
+
         UNION ALL
-        
+
         SELECT
           u.id AS player_id,
           u.username,
