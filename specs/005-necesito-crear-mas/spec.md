@@ -37,6 +37,29 @@
 
 ---
 
+## Clarifications
+
+### Clarifications (Session 2025-10-02)
+
+**Q1: What are the target puzzle generation response times for each size?**
+A: Ultra-fast targets: 9×9 <50ms, 16×16 <100ms, 25×25 <500ms, 36×36 <1s, 49×49 <2s, 100×100 <5s
+
+**Q2: What is the acceptable move validation latency?**
+A: Very fast: <5ms for move validation across all puzzle sizes
+
+**Q3: How many concurrent puzzle generations should the system support?**
+A: Light load: Support 10 concurrent puzzle generation requests
+
+**Q4: Should puzzle generation block the UI or run asynchronously?**
+A: Blocking with spinner: Display loading spinner during generation, blocking game creation UI until puzzle is ready
+
+**Q5: Should puzzles be generated on-demand or pre-generated and cached?**
+A: On-demand only: Generate puzzles when users create rooms, no pre-caching or post-generation caching. Each game room gets a freshly generated puzzle.
+
+---
+
+---
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### Primary User Story
@@ -44,25 +67,25 @@ Game room creators need to generate puzzles quickly without delays, especially w
 
 ### Acceptance Scenarios
 
-1. **Given** a user wants to create a game room with a 9×9 puzzle, **When** they select the puzzle size and difficulty, **Then** the puzzle and solution are generated [NEEDS CLARIFICATION: target response time - instantly? <100ms? <1s?]
+1. **Given** a user wants to create a game room with a 9×9 puzzle, **When** they select the puzzle size and difficulty, **Then** the puzzle and solution are generated within 50ms
 
-2. **Given** a user wants to create a game room with a 25×25 puzzle, **When** they initiate room creation, **Then** the system generates a valid puzzle with pre-computed solution without noticeable delay
+2. **Given** a user wants to create a game room with a 25×25 puzzle, **When** they initiate room creation, **Then** the system generates a valid puzzle with pre-computed solution within 500ms
 
-3. **Given** a user wants to create a game room with a 100×100 puzzle on expert difficulty, **When** they request puzzle generation, **Then** the system completes generation within [NEEDS CLARIFICATION: acceptable timeout for very large puzzles - 5s? 10s? 30s?]
+3. **Given** a user wants to create a game room with a 100×100 puzzle on expert difficulty, **When** they request puzzle generation, **Then** the system completes generation within 5 seconds
 
-4. **Given** a player submits a move in an active game, **When** the move is validated against the pre-computed solution, **Then** validation occurs [NEEDS CLARIFICATION: target validation time - <1ms? <10ms? <50ms?]
+4. **Given** a player submits a move in an active game, **When** the move is validated against the pre-computed solution, **Then** validation completes within 5ms
 
-5. **Given** multiple users are creating game rooms simultaneously with various puzzle sizes, **When** the system handles concurrent puzzle generation requests, **Then** each request completes without impacting others' response times
+5. **Given** up to 10 users are creating game rooms simultaneously with various puzzle sizes, **When** the system handles these concurrent puzzle generation requests, **Then** each request completes within its size-specific timeout without impacting others' response times
 
 6. **Given** a user selects a non-standard puzzle size (e.g., 36×36, 49×49), **When** puzzle generation begins, **Then** the system correctly uses appropriate symbol sets (numbers + letters) for the grid size
 
 ### Edge Cases
 
 - What happens when puzzle generation fails for a specific size/difficulty combination? System MUST retry or provide fallback difficulty
-- How does system handle [NEEDS CLARIFICATION: concurrent generation limit - is there a queue? rate limiting?]
+- How does system handle more than 10 concurrent generation requests? System MUST queue additional requests or return clear "system busy" message with retry guidance
 - What happens when validation is requested for a puzzle whose solution hasn't been fully loaded? System MUST ensure solution data is always available before allowing gameplay
 - How does system handle symbol representation for extremely large grids (e.g., 100×100 requires 100 unique symbols)? System MUST support numeric representations beyond alphanumeric
-- What happens if puzzle generation takes longer than [NEEDS CLARIFICATION: timeout threshold]? System MUST communicate progress or timeout to user
+- What happens if puzzle generation takes longer than the size-specific timeout (50ms for 9×9 up to 5s for 100×100)? System MUST communicate timeout error to user and offer retry option
 
 ---
 
@@ -73,9 +96,12 @@ Game room creators need to generate puzzles quickly without delays, especially w
 #### Puzzle Generation Performance
 - **FR-001**: System MUST generate 9×9 puzzles (standard Sudoku) at least 10x faster than current generation method
 - **FR-002**: System MUST generate 16×16 puzzles at least 10x faster than current generation method
-- **FR-003**: System MUST generate puzzles up to 100×100 size within [NEEDS CLARIFICATION: acceptable timeout - suggest <30s for expert difficulty]
+- **FR-003**: System MUST generate 25×25 puzzles within 500ms
+- **FR-003a**: System MUST generate 36×36 puzzles within 1 second
+- **FR-003b**: System MUST generate 49×49 puzzles within 2 seconds
+- **FR-003c**: System MUST generate 100×100 puzzles within 5 seconds for all difficulty levels
 - **FR-004**: System MUST generate puzzles with pre-computed complete solutions simultaneously with puzzle generation
-- **FR-005**: System MUST NOT block game creation UI while generating puzzles [NEEDS CLARIFICATION: async generation? progress indicator?]
+- **FR-005**: System MUST display loading spinner during puzzle generation, blocking game creation UI until puzzle is ready
 
 #### Multi-Size Puzzle Support
 - **FR-006**: System MUST support 9×9 puzzles with 3×3 sub-grids using digits 1-9
@@ -89,13 +115,15 @@ Game room creators need to generate puzzles quickly without delays, especially w
 
 #### Move Validation Performance
 - **FR-014**: System MUST validate player moves against pre-computed solutions in constant time O(1) regardless of puzzle size
-- **FR-015**: System MUST validate moves for 100×100 puzzles as fast as 9×9 puzzles [NEEDS CLARIFICATION: target <10ms?]
+- **FR-015**: System MUST validate moves for all puzzle sizes (9×9 through 100×100) within 5ms
 - **FR-016**: System MUST maintain current move validation accuracy (100% correct validation)
 
 #### Solution Storage & Retrieval
 - **FR-017**: System MUST store complete puzzle solutions in optimized format for O(1) lookup
 - **FR-018**: System MUST ensure puzzle and solution data integrity (puzzle has exactly one valid solution)
-- **FR-019**: System MUST persist generated puzzles and solutions to database for reuse [NEEDS CLARIFICATION: cache strategy? generate once and reuse, or generate fresh each time?]
+- **FR-019**: System MUST generate puzzles on-demand when users create game rooms and persist them to database with grid data, solution data, and metadata (size, difficulty, generation timestamp). No pre-generation caching or post-generation reuse—each game room gets a freshly generated puzzle.
+
+#### Difficulty Support
 
 #### Difficulty Support
 - **FR-020**: System MUST support all current difficulty levels (easy, medium, hard, expert) for all puzzle sizes
@@ -107,9 +135,9 @@ Game room creators need to generate puzzles quickly without delays, especially w
 - **FR-024**: System MUST continue supporting all currently active puzzle sizes (9×9, 16×16) without regression
 
 ### Performance Requirements
-- **PR-001**: Puzzle generation MUST complete within [NEEDS CLARIFICATION: target time by size - 9×9: <100ms? 16×16: <500ms? 25×25: <2s? 100×100: <30s?]
-- **PR-002**: Move validation MUST complete within [NEEDS CLARIFICATION: target time - <10ms? <50ms?]
-- **PR-003**: System MUST support [NEEDS CLARIFICATION: concurrent puzzle generation requests - 10? 50? 100?] without performance degradation
+- **PR-001**: Puzzle generation MUST complete within: 9×9 <50ms, 16×16 <100ms, 25×25 <500ms, 36×36 <1s, 49×49 <2s, 100×100 <5s
+- **PR-002**: Move validation MUST complete within 5ms for all puzzle sizes
+- **PR-003**: System MUST support 10 concurrent puzzle generation requests without performance degradation
 - **PR-004**: Memory usage MUST NOT exceed [NEEDS CLARIFICATION: memory limit per puzzle - 10MB? 100MB for largest puzzles?]
 
 ### Key Entities *(include if feature involves data)*
@@ -150,12 +178,12 @@ Game room creators need to generate puzzles quickly without delays, especially w
 - [x] Dependencies and assumptions identified
 
 ### Outstanding Clarifications Needed
-1. **Performance Baseline**: What is the current puzzle generation time for 9×9 and 16×16?
-2. **Performance Targets**: Specific response time targets for each puzzle size (9×9: <100ms?, 16×16: <500ms?, 25×25: <2s?, 100×100: <30s?)
-3. **Validation Performance**: Target move validation time (<10ms? <50ms?)
-4. **Concurrent Load**: How many simultaneous puzzle generation requests should be supported?
-5. **Large Puzzle Timeout**: What is acceptable wait time for 100×100 expert puzzles?
-6. **Caching Strategy**: Should puzzles be pre-generated and cached, or generated on-demand?
+1. ~~**Performance Targets**~~: ✅ Resolved - Ultra-fast generation targets defined
+2. ~~**Validation Performance**~~: ✅ Resolved - <5ms validation time for all puzzle sizes
+3. ~~**Concurrent Load**~~: ✅ Resolved - Support 10 concurrent puzzle generations
+4. ~~**UI Blocking**~~: ✅ Resolved - Blocking UI with loading spinner
+5. ~~**Caching Strategy**~~: ✅ Resolved - On-demand generation only, no pre-caching or post-generation reuse
+6. **Memory Limits**: Maximum acceptable memory usage per puzzle (especially for 100×100)?
 
 ---
 
@@ -185,7 +213,7 @@ Game room creators need to generate puzzles quickly without delays, especially w
 - Puzzle generation time reduction: Target >90% reduction for existing sizes
 - New puzzle size adoption: Target >20% of new game rooms using sizes >16×16 within first month
 - Game creation abandonment: Target <2% abandonment due to generation delays
-- Move validation latency: Target <10ms at 99th percentile for all puzzle sizes
+- Move validation latency: Target <5ms at 99th percentile for all puzzle sizes
 - Player satisfaction: Target >4.5/5 rating for gameplay responsiveness
 
 ---
