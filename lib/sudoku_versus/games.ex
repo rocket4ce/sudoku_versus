@@ -5,19 +5,20 @@ defmodule SudokuVersus.Games do
 
   import Ecto.Query, warn: false
   alias SudokuVersus.Repo
-  alias SudokuVersus.Games.{GameRoom, PlayerSession, Move, Puzzle, PuzzleGenerator, Scorer}
+  alias SudokuVersus.Games.{GameRoom, PlayerSession, Move, Puzzle, Scorer}
+  alias SudokuVersus.Puzzles
 
   ## Puzzle functions
 
   @doc """
   Creates a new puzzle with the specified difficulty and grid size.
 
-  Delegates to PuzzleGenerator.generate_puzzle/2.
+  Delegates to Puzzles.generate_puzzle/2 which uses optimized Rust NIF.
   Grid size defaults to 9 for standard Sudoku. Supports 9, 16, 25, 36, 49, and 100.
   """
   def create_puzzle(difficulty, grid_size \\ 9)
       when difficulty in [:easy, :medium, :hard, :expert] and grid_size in [9, 16, 25, 36, 49, 100] do
-    PuzzleGenerator.generate_puzzle(difficulty, grid_size)
+    Puzzles.generate_puzzle(grid_size, difficulty)
   end
 
   @doc """

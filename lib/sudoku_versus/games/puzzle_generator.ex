@@ -241,6 +241,10 @@ defmodule SudokuVersus.Games.PuzzleGenerator do
 
   defp box_size_for_grid(9), do: 3
   defp box_size_for_grid(16), do: 4
+  defp box_size_for_grid(25), do: 5
+  defp box_size_for_grid(36), do: 6
+  defp box_size_for_grid(49), do: 7
+  defp box_size_for_grid(100), do: 10
 
   # Clues for 9x9 grids
   defp clues_for_difficulty(:easy, 9), do: Enum.random(36..45)
@@ -253,4 +257,28 @@ defmodule SudokuVersus.Games.PuzzleGenerator do
   defp clues_for_difficulty(:medium, 16), do: Enum.random(115..134)
   defp clues_for_difficulty(:hard, 16), do: Enum.random(95..114)
   defp clues_for_difficulty(:expert, 16), do: Enum.random(80..94)
+
+  # Clues for 25x25 grids (total = 625)
+  defp clues_for_difficulty(:easy, 25), do: Enum.random(350..375)
+  defp clues_for_difficulty(:medium, 25), do: Enum.random(300..349)
+  defp clues_for_difficulty(:hard, 25), do: Enum.random(250..299)
+  defp clues_for_difficulty(:expert, 25), do: Enum.random(220..249)
+
+  # Clues for 36x36 grids (total = 1296)
+  defp clues_for_difficulty(:easy, 36), do: Enum.random(700..780)
+  defp clues_for_difficulty(:medium, 36), do: Enum.random(600..699)
+  defp clues_for_difficulty(:hard, 36), do: Enum.random(500..599)
+  defp clues_for_difficulty(:expert, 36), do: Enum.random(450..499)
+
+  # Clues for 49x49 grids (total = 2401)
+  defp clues_for_difficulty(:easy, 49), do: Enum.random(1300..1440)
+  defp clues_for_difficulty(:medium, 49), do: Enum.random(1100..1299)
+  defp clues_for_difficulty(:hard, 49), do: Enum.random(950..1099)
+  defp clues_for_difficulty(:expert, 49), do: Enum.random(850..949)
+
+  # Clues for 100x100 grids (total = 10000)
+  defp clues_for_difficulty(:easy, 100), do: Enum.random(5500..6000)
+  defp clues_for_difficulty(:medium, 100), do: Enum.random(4800..5499)
+  defp clues_for_difficulty(:hard, 100), do: Enum.random(4200..4799)
+  defp clues_for_difficulty(:expert, 100), do: Enum.random(3800..4199)
 end
