@@ -18,6 +18,17 @@ defmodule SudokuVersus.Games do
     PuzzleGenerator.generate_puzzle(difficulty)
   end
 
+  @doc """
+  Gets a single puzzle by ID.
+
+  Returns nil if the puzzle does not exist.
+  """
+  def get_puzzle(id) when is_binary(id) do
+    Repo.get(Puzzle, id)
+  end
+
+  def get_puzzle(_), do: nil
+
   ## Game Room functions
 
   @doc """
@@ -61,7 +72,8 @@ defmodule SudokuVersus.Games do
   @doc """
   Updates a game room's status.
   """
-  def update_room_status(%GameRoom{} = room, status) when status in [:active, :completed, :archived] do
+  def update_room_status(%GameRoom{} = room, status)
+      when status in [:active, :completed, :archived] do
     room
     |> GameRoom.status_changeset(%{status: status})
     |> Repo.update()
@@ -182,6 +194,9 @@ defmodule SudokuVersus.Games do
           maybe_start_game_timer(room)
           increment_room_moves(room_id)
 
+          # Preload player association for template access
+          move = Repo.preload(move, :player)
+
           {:ok, move}
 
         error ->
@@ -281,6 +296,21 @@ defmodule SudokuVersus.Games do
     |> limit(^limit)
     |> preload(:player)
     |> Repo.all()
+  end
+
+  ## Score Recording functions
+
+  @doc """
+  Records a final score for a player's game session.
+
+  Used when a game is completed or a player leaves.
+  """
+  def record_score(attrs) do
+    alias SudokuVersus.Games.ScoreRecord
+
+    %ScoreRecord{}
+    |> ScoreRecord.changeset(Map.put(attrs, :recorded_at, DateTime.utc_now()))
+    |> Repo.insert()
   end
 
   ## Leaderboard functions (placeholders for T038-T039)

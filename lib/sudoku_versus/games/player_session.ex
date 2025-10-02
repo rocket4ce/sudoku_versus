@@ -36,9 +36,11 @@ defmodule SudokuVersus.Games.PlayerSession do
   """
   def changeset(player_session, attrs) do
     now = DateTime.utc_now()
-    attrs = attrs
-    |> Map.put_new(:started_at, now)
-    |> Map.put_new(:last_activity_at, now)
+
+    attrs =
+      attrs
+      |> Map.put_new(:started_at, now)
+      |> Map.put_new(:last_activity_at, now)
 
     player_session
     |> cast(attrs, [

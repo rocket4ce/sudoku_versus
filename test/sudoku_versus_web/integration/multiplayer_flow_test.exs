@@ -19,12 +19,14 @@ defmodule SudokuVersusWeb.Integration.MultiplayerFlowTest do
 
     # Step 1: User A creates a room
     {:ok, puzzle} = Games.create_puzzle(:medium)
-    {:ok, room} = Games.create_game_room(%{
-      name: "Multiplayer Test Room",
-      creator_id: player_a.id,
-      puzzle_id: puzzle.id,
-      visibility: :public
-    })
+
+    {:ok, room} =
+      Games.create_game_room(%{
+        name: "Multiplayer Test Room",
+        creator_id: player_a.id,
+        puzzle_id: puzzle.id,
+        visibility: :public
+      })
 
     # User A joins the room
     conn_a = build_conn() |> Plug.Test.init_test_session(user_id: player_a.id)
@@ -66,11 +68,13 @@ defmodule SudokuVersusWeb.Integration.MultiplayerFlowTest do
     {:ok, joiner2} = Accounts.create_guest_user(%{username: "joiner_two"})
 
     {:ok, puzzle} = Games.create_puzzle(:easy)
-    {:ok, room} = Games.create_game_room(%{
-      name: "Player Count Test",
-      creator_id: creator.id,
-      puzzle_id: puzzle.id
-    })
+
+    {:ok, room} =
+      Games.create_game_room(%{
+        name: "Player Count Test",
+        creator_id: creator.id,
+        puzzle_id: puzzle.id
+      })
 
     # Creator joins
     conn_creator = build_conn() |> Plug.Test.init_test_session(user_id: creator.id)
@@ -103,11 +107,13 @@ defmodule SudokuVersusWeb.Integration.MultiplayerFlowTest do
     {:ok, player_b} = Accounts.create_guest_user(%{username: "watcher_b"})
 
     {:ok, puzzle} = Games.create_puzzle(:hard)
-    {:ok, room} = Games.create_game_room(%{
-      name: "Score Broadcast Test",
-      creator_id: player_a.id,
-      puzzle_id: puzzle.id
-    })
+
+    {:ok, room} =
+      Games.create_game_room(%{
+        name: "Score Broadcast Test",
+        creator_id: player_a.id,
+        puzzle_id: puzzle.id
+      })
 
     # Both players join
     conn_a = build_conn() |> Plug.Test.init_test_session(user_id: player_a.id)
@@ -138,11 +144,13 @@ defmodule SudokuVersusWeb.Integration.MultiplayerFlowTest do
     {:ok, player} = Accounts.create_guest_user(%{username: "status_watcher"})
 
     {:ok, puzzle} = Games.create_puzzle(:expert)
-    {:ok, room} = Games.create_game_room(%{
-      name: "Status Test Room",
-      creator_id: player.id,
-      puzzle_id: puzzle.id
-    })
+
+    {:ok, room} =
+      Games.create_game_room(%{
+        name: "Status Test Room",
+        creator_id: player.id,
+        puzzle_id: puzzle.id
+      })
 
     conn_player = build_conn() |> Plug.Test.init_test_session(user_id: player.id)
     {:ok, view, _html} = live(conn_player, ~p"/game/#{room.id}")

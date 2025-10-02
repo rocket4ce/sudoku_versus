@@ -9,6 +9,7 @@ defmodule SudokuVersus.Games.ScorerTest do
     setup do
       user = %User{id: Ecto.UUID.generate()}
       puzzle = %Puzzle{difficulty: :medium}
+
       session = %PlayerSession{
         player_id: user.id,
         current_streak: 5,
@@ -67,8 +68,17 @@ defmodule SudokuVersus.Games.ScorerTest do
     end
 
     test "applies streak multiplier to score", %{puzzle: puzzle, move: move} do
-      session_no_streak = %PlayerSession{current_streak: 0, correct_moves_count: 1, incorrect_moves_count: 0}
-      session_with_streak = %PlayerSession{current_streak: 10, correct_moves_count: 10, incorrect_moves_count: 0}
+      session_no_streak = %PlayerSession{
+        current_streak: 0,
+        correct_moves_count: 1,
+        incorrect_moves_count: 0
+      }
+
+      session_with_streak = %PlayerSession{
+        current_streak: 10,
+        correct_moves_count: 10,
+        incorrect_moves_count: 0
+      }
 
       score_no_streak = Scorer.calculate_score(move, session_no_streak, puzzle)
       score_with_streak = Scorer.calculate_score(move, session_with_streak, puzzle)

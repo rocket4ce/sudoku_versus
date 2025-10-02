@@ -10,17 +10,17 @@ defmodule SudokuVersusWeb.GameLive.Show do
 
     with {:ok, room} <- fetch_room(room_id),
          {:ok, session_record} <- ensure_player_session(room_id, user_id) do
-
       if connected?(socket) do
         # Subscribe to PubSub for real-time updates
         Phoenix.PubSub.subscribe(SudokuVersus.PubSub, "game_room:#{room_id}")
 
         # Track presence
-        {:ok, _} = Presence.track(self(), "game_room:#{room_id}", user_id, %{
-          username: session_record.player.username,
-          player_id: user_id,
-          joined_at: :os.system_time(:second)
-        })
+        {:ok, _} =
+          Presence.track(self(), "game_room:#{room_id}", user_id, %{
+            username: session_record.player.username,
+            player_id: user_id,
+            joined_at: :os.system_time(:second)
+          })
       end
 
       moves = Games.get_room_moves(room_id)
@@ -41,7 +41,10 @@ defmodule SudokuVersusWeb.GameLive.Show do
         |> assign(:puzzle, room.puzzle)
         |> assign(:grid, room.puzzle.grid)
         |> assign(:players_online_count, map_size(presences))
+        |> assign(:moves_count, length(moves))
         |> assign(:elapsed_seconds, calculate_elapsed_seconds(room))
+        |> assign(:penalty_until, nil)
+        |> assign(:penalty_remaining, 0)
         |> stream(:moves, moves)
         |> stream(:players, extract_players(presences))
 
@@ -63,37 +66,58 @@ defmodule SudokuVersusWeb.GameLive.Show do
 
   @impl true
   def handle_event("submit_move", %{"row" => row, "col" => col, "value" => value}, socket) do
-    move_attrs = %{
-      row: String.to_integer(row),
-      col: String.to_integer(col),
-      value: String.to_integer(value)
-    }
+    # Check if player is currently penalized
+    if penalty_active?(socket) do
+      remaining = socket.assigns.penalty_remaining
 
-    case Games.record_move(socket.assigns.room_id, socket.assigns.current_user_id, move_attrs) do
-      {:ok, move} ->
-        # Broadcast move to all players in room
-        Phoenix.PubSub.broadcast(
-          SudokuVersus.PubSub,
-          "game_room:#{socket.assigns.room_id}",
-          {:new_move, move.id}
-        )
+      {:noreply,
+       put_flash(
+         socket,
+         :error,
+         "Penalty active! Wait #{remaining} seconds before submitting again."
+       )}
+    else
+      move_attrs = %{
+        row: String.to_integer(row),
+        col: String.to_integer(col),
+        value: String.to_integer(value)
+      }
 
-        # Update local session
-        updated_session = Games.get_player_session(socket.assigns.room_id, socket.assigns.current_user_id)
+      case Games.record_move(socket.assigns.room_id, socket.assigns.current_user_id, move_attrs) do
+        {:ok, move} ->
+          # Broadcast move to all players in room
+          Phoenix.PubSub.broadcast(
+            SudokuVersus.PubSub,
+            "game_room:#{socket.assigns.room_id}",
+            {:new_move, move.id}
+          )
 
-        socket =
-          socket
-          |> assign(:session, updated_session)
-          |> stream_insert(:moves, move, at: 0)
-          |> put_flash(:info, "Move recorded! +#{move.points_earned} points")
+          # Update local session
+          updated_session =
+            Games.get_player_session(socket.assigns.room_id, socket.assigns.current_user_id)
 
-        {:noreply, socket}
+          socket =
+            socket
+            |> assign(:session, updated_session)
+            |> assign(:moves_count, socket.assigns.moves_count + 1)
+            |> stream_insert(:moves, move, at: 0)
 
-      {:error, :session_not_found} ->
-        {:noreply, put_flash(socket, :error, "Session not found. Please rejoin the room.")}
+          # Apply penalty if move was incorrect
+          socket =
+            if move.is_correct do
+              put_flash(socket, :info, "Correct! +#{move.points_earned} points")
+            else
+              apply_penalty(socket)
+            end
 
-      {:error, reason} ->
-        {:noreply, put_flash(socket, :error, "Error: #{inspect(reason)}")}
+          {:noreply, socket}
+
+        {:error, :session_not_found} ->
+          {:noreply, put_flash(socket, :error, "Session not found. Please rejoin the room.")}
+
+        {:error, reason} ->
+          {:noreply, put_flash(socket, :error, "Error: #{inspect(reason)}")}
+      end
     end
   end
 
@@ -104,7 +128,12 @@ defmodule SudokuVersusWeb.GameLive.Show do
 
     case moves do
       [move] when move.id == move_id ->
-        {:noreply, stream_insert(socket, :moves, move, at: 0)}
+        socket =
+          socket
+          |> assign(:moves_count, socket.assigns.moves_count + 1)
+          |> stream_insert(:moves, move, at: 0)
+
+        {:noreply, socket}
 
       _ ->
         {:noreply, socket}
@@ -151,6 +180,30 @@ defmodule SudokuVersusWeb.GameLive.Show do
     {:noreply, assign(socket, :elapsed_seconds, elapsed_seconds)}
   end
 
+  @impl true
+  def handle_info(:penalty_tick, socket) do
+    if penalty_active?(socket) do
+      remaining = DateTime.diff(socket.assigns.penalty_until, DateTime.utc_now(), :second)
+
+      if remaining > 0 do
+        # Schedule next tick
+        Process.send_after(self(), :penalty_tick, 1000)
+        {:noreply, assign(socket, :penalty_remaining, remaining)}
+      else
+        # Penalty expired
+        socket =
+          socket
+          |> assign(:penalty_until, nil)
+          |> assign(:penalty_remaining, 0)
+          |> put_flash(:info, "Penalty cleared! You can submit moves again.")
+
+        {:noreply, socket}
+      end
+    else
+      {:noreply, socket}
+    end
+  end
+
   # Private helper functions
 
   defp fetch_room(room_id) do
@@ -176,6 +229,7 @@ defmodule SudokuVersusWeb.GameLive.Show do
   defp extract_players(presences) do
     Enum.map(presences, fn {user_id, %{metas: metas}} ->
       meta = List.first(metas)
+
       %{
         id: user_id,
         username: Map.get(meta, :username, "Unknown"),
@@ -188,5 +242,24 @@ defmodule SudokuVersusWeb.GameLive.Show do
 
   defp calculate_elapsed_seconds(%{started_at: started_at}) do
     DateTime.diff(DateTime.utc_now(), started_at, :second)
+  end
+
+  defp penalty_active?(socket) do
+    case socket.assigns.penalty_until do
+      nil -> false
+      penalty_until -> DateTime.compare(DateTime.utc_now(), penalty_until) == :lt
+    end
+  end
+
+  defp apply_penalty(socket) do
+    penalty_until = DateTime.add(DateTime.utc_now(), 10, :second)
+
+    # Schedule countdown ticks
+    Process.send_after(self(), :penalty_tick, 1000)
+
+    socket
+    |> assign(:penalty_until, penalty_until)
+    |> assign(:penalty_remaining, 10)
+    |> put_flash(:error, "Incorrect move! Wait 10 seconds before trying again.")
   end
 end

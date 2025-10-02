@@ -72,11 +72,13 @@ defmodule SudokuVersusWeb.Integration.GuestFlowTest do
     # Create a room first
     {:ok, creator} = Accounts.create_guest_user(%{username: "room_creator"})
     {:ok, puzzle} = Games.create_puzzle(:easy)
-    {:ok, _room} = Games.create_game_room(%{
-      name: "Existing Room",
-      creator_id: creator.id,
-      puzzle_id: puzzle.id
-    })
+
+    {:ok, _room} =
+      Games.create_game_room(%{
+        name: "Existing Room",
+        creator_id: creator.id,
+        puzzle_id: puzzle.id
+      })
 
     # Guest logs in
     {:ok, guest_view, _html} = live(conn, ~p"/login/guest")
@@ -105,11 +107,13 @@ defmodule SudokuVersusWeb.Integration.GuestFlowTest do
   test "guest can view their score after multiple moves", %{conn: conn} do
     {:ok, creator} = Accounts.create_guest_user(%{username: "score_tester"})
     {:ok, puzzle} = Games.create_puzzle(:medium)
-    {:ok, room} = Games.create_game_room(%{
-      name: "Score Test Room",
-      creator_id: creator.id,
-      puzzle_id: puzzle.id
-    })
+
+    {:ok, room} =
+      Games.create_game_room(%{
+        name: "Score Test Room",
+        creator_id: creator.id,
+        puzzle_id: puzzle.id
+      })
 
     conn = Plug.Test.init_test_session(conn, user_id: creator.id)
     {:ok, game_view, _html} = live(conn, ~p"/game/#{room.id}")

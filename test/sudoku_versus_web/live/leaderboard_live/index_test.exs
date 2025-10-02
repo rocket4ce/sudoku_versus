@@ -30,11 +30,13 @@ defmodule SudokuVersusWeb.LeaderboardLive.IndexTest do
       # Create some score records
       {:ok, player1} = Accounts.create_guest_user(%{username: "top_player"})
       {:ok, puzzle} = Games.create_puzzle(:medium)
-      {:ok, room} = Games.create_game_room(%{
-        name: "Leaderboard Room",
-        creator_id: player1.id,
-        puzzle_id: puzzle.id
-      })
+
+      {:ok, room} =
+        Games.create_game_room(%{
+          name: "Leaderboard Room",
+          creator_id: player1.id,
+          puzzle_id: puzzle.id
+        })
 
       Games.record_score(%{
         player_id: player1.id,
@@ -63,17 +65,19 @@ defmodule SudokuVersusWeb.LeaderboardLive.IndexTest do
       {:ok, easy_puzzle} = Games.create_puzzle(:easy)
       {:ok, hard_puzzle} = Games.create_puzzle(:hard)
 
-      {:ok, easy_room} = Games.create_game_room(%{
-        name: "Easy Room",
-        creator_id: easy_player.id,
-        puzzle_id: easy_puzzle.id
-      })
+      {:ok, easy_room} =
+        Games.create_game_room(%{
+          name: "Easy Room",
+          creator_id: easy_player.id,
+          puzzle_id: easy_puzzle.id
+        })
 
-      {:ok, hard_room} = Games.create_game_room(%{
-        name: "Hard Room",
-        creator_id: hard_player.id,
-        puzzle_id: hard_puzzle.id
-      })
+      {:ok, hard_room} =
+        Games.create_game_room(%{
+          name: "Hard Room",
+          creator_id: hard_player.id,
+          puzzle_id: hard_puzzle.id
+        })
 
       Games.record_score(%{
         player_id: easy_player.id,
@@ -125,11 +129,13 @@ defmodule SudokuVersusWeb.LeaderboardLive.IndexTest do
     setup do
       {:ok, player} = Accounts.create_guest_user(%{username: "ranked_player"})
       {:ok, puzzle} = Games.create_puzzle(:expert)
-      {:ok, room} = Games.create_game_room(%{
-        name: "Ranked Room",
-        creator_id: player.id,
-        puzzle_id: puzzle.id
-      })
+
+      {:ok, room} =
+        Games.create_game_room(%{
+          name: "Ranked Room",
+          creator_id: player.id,
+          puzzle_id: puzzle.id
+        })
 
       Games.record_score(%{
         player_id: player.id,

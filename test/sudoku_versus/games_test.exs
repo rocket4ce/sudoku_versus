@@ -31,7 +31,8 @@ defmodule SudokuVersus.GamesTest do
 
     test "returns error with invalid room name", %{user: user, puzzle: puzzle} do
       attrs = %{
-        name: String.duplicate("a", 31),  # Too long (max 30)
+        # Too long (max 30)
+        name: String.duplicate("a", 31),
         creator_id: user.id,
         puzzle_id: puzzle.id
       }
@@ -47,21 +48,23 @@ defmodule SudokuVersus.GamesTest do
       {:ok, puzzle} = Games.create_puzzle(:easy)
 
       # Create active room
-      {:ok, active_room} = Games.create_game_room(%{
-        name: "Active Room",
-        creator_id: user.id,
-        puzzle_id: puzzle.id
-      })
+      {:ok, active_room} =
+        Games.create_game_room(%{
+          name: "Active Room",
+          creator_id: user.id,
+          puzzle_id: puzzle.id
+        })
 
       # Create completed room
-      {:ok, completed_room} = Games.create_game_room(%{
-        name: "Completed Room",
-        creator_id: user.id,
-        puzzle_id: puzzle.id
-      })
-      |> case do
-        {:ok, room} -> Games.update_room_status(room, :completed)
-      end
+      {:ok, completed_room} =
+        Games.create_game_room(%{
+          name: "Completed Room",
+          creator_id: user.id,
+          puzzle_id: puzzle.id
+        })
+        |> case do
+          {:ok, room} -> Games.update_room_status(room, :completed)
+        end
 
       %{active_room: active_room, completed_room: completed_room}
     end
@@ -88,11 +91,13 @@ defmodule SudokuVersus.GamesTest do
       {:ok, creator} = Accounts.create_guest_user(%{username: "room_creator"})
       {:ok, player} = Accounts.create_guest_user(%{username: "player_joining"})
       {:ok, puzzle} = Games.create_puzzle(:medium)
-      {:ok, room} = Games.create_game_room(%{
-        name: "Join Test Room",
-        creator_id: creator.id,
-        puzzle_id: puzzle.id
-      })
+
+      {:ok, room} =
+        Games.create_game_room(%{
+          name: "Join Test Room",
+          creator_id: creator.id,
+          puzzle_id: puzzle.id
+        })
 
       %{room: room, player: player}
     end
@@ -126,11 +131,14 @@ defmodule SudokuVersus.GamesTest do
       {:ok, player} = Accounts.create_guest_user(%{username: "leaving_player"})
       {:ok, creator} = Accounts.create_guest_user(%{username: "room_owner"})
       {:ok, puzzle} = Games.create_puzzle(:easy)
-      {:ok, room} = Games.create_game_room(%{
-        name: "Leave Test Room",
-        creator_id: creator.id,
-        puzzle_id: puzzle.id
-      })
+
+      {:ok, room} =
+        Games.create_game_room(%{
+          name: "Leave Test Room",
+          creator_id: creator.id,
+          puzzle_id: puzzle.id
+        })
+
       {:ok, session} = Games.join_room(room.id, player.id)
 
       %{room: room, player: player, session: session}
@@ -156,11 +164,14 @@ defmodule SudokuVersus.GamesTest do
       {:ok, player} = Accounts.create_guest_user(%{username: "move_maker"})
       {:ok, creator} = Accounts.create_guest_user(%{username: "game_creator"})
       {:ok, puzzle} = Games.create_puzzle(:medium)
-      {:ok, room} = Games.create_game_room(%{
-        name: "Move Test Room",
-        creator_id: creator.id,
-        puzzle_id: puzzle.id
-      })
+
+      {:ok, room} =
+        Games.create_game_room(%{
+          name: "Move Test Room",
+          creator_id: creator.id,
+          puzzle_id: puzzle.id
+        })
+
       {:ok, session} = Games.join_room(room.id, player.id)
 
       %{room: room, player: player, session: session, puzzle: puzzle}
@@ -191,7 +202,11 @@ defmodule SudokuVersus.GamesTest do
       assert move.points_earned == 0
     end
 
-    test "updates player session stats after correct move", %{room: room, player: player, puzzle: puzzle} do
+    test "updates player session stats after correct move", %{
+      room: room,
+      player: player,
+      puzzle: puzzle
+    } do
       {row, col, value} = find_empty_cell_solution(puzzle)
       move_attrs = %{row: row, col: col, value: value}
 
@@ -220,11 +235,14 @@ defmodule SudokuVersus.GamesTest do
       {:ok, player} = Accounts.create_guest_user(%{username: "history_viewer"})
       {:ok, creator} = Accounts.create_guest_user(%{username: "hist_creator"})
       {:ok, puzzle} = Games.create_puzzle(:easy)
-      {:ok, room} = Games.create_game_room(%{
-        name: "History Room",
-        creator_id: creator.id,
-        puzzle_id: puzzle.id
-      })
+
+      {:ok, room} =
+        Games.create_game_room(%{
+          name: "History Room",
+          creator_id: creator.id,
+          puzzle_id: puzzle.id
+        })
+
       {:ok, _session} = Games.join_room(room.id, player.id)
 
       # Record some moves

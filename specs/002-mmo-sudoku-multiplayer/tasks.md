@@ -372,7 +372,7 @@
 ## Phase 3.5: Polish & Testing
 
 ### Edge Cases & Error Handling
-- [ ] **T056** [P] Add error handling for invalid moves
+- [X] **T056** [P] Add error handling for invalid moves
   - **File**: `lib/sudoku_versus_web/live/game_live/show.ex`
   - **Details**: Handle incorrect moves with penalty countdown (10 seconds), display error flash, prevent submission during penalty
   - **Verify**: Manual testing + update T023 with penalty tests
@@ -383,7 +383,7 @@
   - **Details**: Handle disconnects gracefully, re-subscribe to PubSub on reconnect, sync state from database
   - **Dependencies**: T045
 
-- [ ] **T058** [P] Add empty state handling for streams
+- [X] **T058** [P] Add empty state handling for streams
   - **File**: `lib/sudoku_versus_web/live/game_live/index.html.heex`, `lib/sudoku_versus_web/live/game_live/show.html.heex`
   - **Details**: Display "No rooms yet" when @rooms_count == 0, "No moves yet" when moves stream empty
   - **Dependencies**: T044, T046
@@ -394,7 +394,7 @@
   - **Details**: Verify all indexes from data-model.md are created, test query performance on large datasets (1000+ rooms, 100k+ moves)
   - **Dependencies**: T001-T007
 
-- [ ] **T060** [P] Add query preloading to avoid N+1
+- [X] **T060** [P] Add query preloading to avoid N+1
   - **File**: `lib/sudoku_versus/games.ex`
   - **Details**: Verify all queries preload associations before template access (game_room.creator, move.player, etc.)
   - **Dependencies**: T034, T037

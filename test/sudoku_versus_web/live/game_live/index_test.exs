@@ -28,12 +28,14 @@ defmodule SudokuVersusWeb.GameLive.IndexTest do
 
     test "shows existing rooms with player counts", %{conn: conn, user: user} do
       {:ok, puzzle} = Games.create_puzzle(:medium)
-      {:ok, _room} = Games.create_game_room(%{
-        name: "Test Room 🎮",
-        creator_id: user.id,
-        puzzle_id: puzzle.id,
-        visibility: :public
-      })
+
+      {:ok, _room} =
+        Games.create_game_room(%{
+          name: "Test Room 🎮",
+          creator_id: user.id,
+          puzzle_id: puzzle.id,
+          visibility: :public
+        })
 
       conn = Plug.Test.init_test_session(conn, user_id: user.id)
       {:ok, view, _html} = live(conn, ~p"/game")
@@ -69,7 +71,8 @@ defmodule SudokuVersusWeb.GameLive.IndexTest do
     test "shows error with invalid room name", %{view: view} do
       form_data = %{
         "room" => %{
-          "name" => "",  # Empty name
+          # Empty name
+          "name" => "",
           "difficulty" => "medium"
         }
       }
@@ -100,17 +103,19 @@ defmodule SudokuVersusWeb.GameLive.IndexTest do
       {:ok, puzzle_easy} = Games.create_puzzle(:easy)
       {:ok, puzzle_hard} = Games.create_puzzle(:hard)
 
-      {:ok, _easy_room} = Games.create_game_room(%{
-        name: "Easy Room",
-        creator_id: user.id,
-        puzzle_id: puzzle_easy.id
-      })
+      {:ok, _easy_room} =
+        Games.create_game_room(%{
+          name: "Easy Room",
+          creator_id: user.id,
+          puzzle_id: puzzle_easy.id
+        })
 
-      {:ok, _hard_room} = Games.create_game_room(%{
-        name: "Hard Room",
-        creator_id: user.id,
-        puzzle_id: puzzle_hard.id
-      })
+      {:ok, _hard_room} =
+        Games.create_game_room(%{
+          name: "Hard Room",
+          creator_id: user.id,
+          puzzle_id: puzzle_hard.id
+        })
 
       conn = build_conn() |> Plug.Test.init_test_session(user_id: user.id)
       {:ok, view, _html} = live(conn, ~p"/game")
@@ -137,11 +142,13 @@ defmodule SudokuVersusWeb.GameLive.IndexTest do
     setup do
       {:ok, user} = Accounts.create_guest_user(%{username: "card_viewer"})
       {:ok, puzzle} = Games.create_puzzle(:medium)
-      {:ok, room} = Games.create_game_room(%{
-        name: "Active Room",
-        creator_id: user.id,
-        puzzle_id: puzzle.id
-      })
+
+      {:ok, room} =
+        Games.create_game_room(%{
+          name: "Active Room",
+          creator_id: user.id,
+          puzzle_id: puzzle.id
+        })
 
       # Join room to update player count
       {:ok, _session} = Games.join_room(room.id, user.id)

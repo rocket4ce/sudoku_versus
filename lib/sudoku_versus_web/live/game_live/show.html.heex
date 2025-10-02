@@ -2,7 +2,9 @@
   {@room.name}
   <:subtitle>
     <span class="badge badge-primary">{String.capitalize(to_string(@puzzle.difficulty))}</span>
-    <span class="ml-2">{@players_online_count} player<%= if @players_online_count != 1, do: "s" %> online</span>
+    <span class="ml-2">
+      {@players_online_count} player{if @players_online_count != 1, do: "s"} online
+    </span>
   </:subtitle>
   <:actions>
     <.link navigate={~p"/game"} class="btn btn-ghost btn-sm">
@@ -52,6 +54,13 @@
         <%!-- Move Form (alternative input) --%>
         <div class="mt-6 p-4 bg-base-200 rounded-lg">
           <h3 class="font-semibold mb-2">Quick Submit Move</h3>
+
+          <%!-- Penalty Warning --%>
+          <div :if={@penalty_remaining > 0} class="alert alert-warning mb-4">
+            <.icon name="hero-exclamation-triangle" class="w-5 h-5" />
+            <span>Penalty active! Wait {@penalty_remaining} seconds</span>
+          </div>
+
           <form id="move-form" phx-submit="submit_move" class="flex gap-2">
             <input
               type="number"
@@ -80,7 +89,7 @@
               class="input input-bordered input-sm flex-1"
               required
             />
-            <button type="submit" class="btn btn-primary btn-sm">
+            <button type="submit" class="btn btn-primary btn-sm" disabled={@penalty_remaining > 0}>
               Submit
             </button>
           </form>
@@ -133,8 +142,7 @@
     <div class="card bg-base-100 shadow-xl">
       <div class="card-body">
         <h3 class="card-title text-base">
-          <.icon name="hero-clock" class="w-5 h-5" />
-          Recent Moves
+          <.icon name="hero-clock" class="w-5 h-5" /> Recent Moves
         </h3>
 
         <div id="move-list" phx-update="stream" class="space-y-2 max-h-96 overflow-y-auto">
@@ -163,8 +171,8 @@
           </div>
         </div>
 
-        <%!-- Empty state shows with CSS when no moves --%>
-        <div class="hidden only:block text-sm text-gray-500 text-center py-4">
+        <%!-- Empty state --%>
+        <div :if={@moves_count == 0} class="text-sm text-gray-500 text-center py-4">
           No moves yet
         </div>
       </div>

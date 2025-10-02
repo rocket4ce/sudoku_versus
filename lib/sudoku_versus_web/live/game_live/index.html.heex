@@ -73,7 +73,7 @@
     </select>
 
     <span class="ml-auto text-sm text-gray-600">
-      {@rooms_count} room<%= if @rooms_count != 1, do: "s" %> available
+      {@rooms_count} room{if @rooms_count != 1, do: "s"} available
     </span>
   </div>
 
@@ -96,7 +96,7 @@
 
           <span class="badge badge-ghost">
             <.icon name="hero-user-group" class="w-4 h-4 mr-1" />
-            {room.current_players_count} player<%= if room.current_players_count != 1, do: "s" %>
+            {room.current_players_count} player{if room.current_players_count != 1, do: "s"}
           </span>
         </div>
 

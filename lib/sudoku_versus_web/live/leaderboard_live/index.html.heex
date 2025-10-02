@@ -58,12 +58,15 @@
                 ]}>
                   <%= if entry.rank <= 3 do %>
                     <%= case entry.rank do %>
-                      <% 1 -> %> 🥇
-                      <% 2 -> %> 🥈
-                      <% 3 -> %> 🥉
+                      <% 1 -> %>
+                        🥇
+                      <% 2 -> %>
+                        🥈
+                      <% 3 -> %>
+                        🥉
                     <% end %>
                   <% else %>
-                    #<%= entry.rank %>
+                    #{entry.rank}
                   <% end %>
                 </span>
               </td>

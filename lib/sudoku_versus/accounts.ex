@@ -66,9 +66,10 @@ defmodule SudokuVersus.Accounts do
     email = oauth_data["email"] || oauth_data[:email]
     raw_username = oauth_data["name"] || oauth_data["login"] || oauth_data[:login] || email
     # Sanitize username: replace spaces with underscores, keep only valid chars
-    username = raw_username
-    |> String.replace(~r/[^a-zA-Z0-9_-]/, "_")
-    |> String.slice(0, 30)
+    username =
+      raw_username
+      |> String.replace(~r/[^a-zA-Z0-9_-]/, "_")
+      |> String.slice(0, 30)
 
     # Try to find existing user by OAuth provider
     case Repo.get_by(User, oauth_provider: provider, oauth_provider_id: provider_id) do

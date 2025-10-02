@@ -26,7 +26,8 @@ defmodule SudokuVersusWeb.AuthLiveTest do
     test "shows error with invalid username", %{conn: conn} do
       {:ok, view, _html} = live(conn, ~p"/login/guest")
 
-      form_data = %{"user" => %{"username" => "ab"}}  # Too short
+      # Too short
+      form_data = %{"user" => %{"username" => "ab"}}
 
       html =
         view
@@ -39,7 +40,8 @@ defmodule SudokuVersusWeb.AuthLiveTest do
     test "validates username format", %{conn: conn} do
       {:ok, view, _html} = live(conn, ~p"/login/guest")
 
-      form_data = %{"user" => %{"username" => "invalid username!"}}  # Contains invalid chars
+      # Contains invalid chars
+      form_data = %{"user" => %{"username" => "invalid username!"}}
 
       html =
         view
@@ -171,11 +173,12 @@ defmodule SudokuVersusWeb.AuthLiveTest do
 
   describe "login form (email/password)" do
     setup do
-      {:ok, user} = Accounts.register_user(%{
-        username: "existing_user",
-        email: "existing@example.com",
-        password: "SecurePass123"
-      })
+      {:ok, user} =
+        Accounts.register_user(%{
+          username: "existing_user",
+          email: "existing@example.com",
+          password: "SecurePass123"
+        })
 
       %{user: user}
     end

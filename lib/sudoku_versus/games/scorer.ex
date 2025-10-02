@@ -2,7 +2,7 @@ defmodule SudokuVersus.Games.Scorer do
   @moduledoc """
   Calculates scores for Sudoku moves with difficulty-based points,
   streak multipliers, speed bonuses, and penalties.
-  
+
   Scoring is calculated immediately on each move submission (<1ms compute time).
   """
 
@@ -10,7 +10,7 @@ defmodule SudokuVersus.Games.Scorer do
 
   @doc """
   Calculates the score for a move.
-  
+
   Returns 0 for incorrect moves.
   For correct moves, returns: (base_points * streak_multiplier) + speed_bonus - penalties
   """
@@ -29,7 +29,7 @@ defmodule SudokuVersus.Games.Scorer do
 
   @doc """
   Returns base points for a difficulty level.
-  
+
   - :easy - 500 points
   - :medium - 1500 points
   - :hard - 3000 points
@@ -42,7 +42,7 @@ defmodule SudokuVersus.Games.Scorer do
 
   @doc """
   Calculates streak multiplier (1.0 to 2.0).
-  
+
   Formula: 1.0 + min(streak * 0.05, 1.0)
   - 0 streak: 1.0x
   - 5 streak: 1.25x
@@ -57,7 +57,7 @@ defmodule SudokuVersus.Games.Scorer do
 
   @doc """
   Calculates speed bonus for fast moves.
-  
+
   Bonus for moves completed in under 10 seconds:
   - < 5 seconds: 200 bonus points
   - 5-10 seconds: 100 bonus points
@@ -76,7 +76,7 @@ defmodule SudokuVersus.Games.Scorer do
 
   @doc """
   Calculates penalties based on incorrect moves.
-  
+
   Formula: incorrect_moves_count * 100
   """
   def calculate_penalties(%PlayerSession{} = session) do

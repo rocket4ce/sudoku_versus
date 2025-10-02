@@ -15,7 +15,8 @@ defmodule SudokuVersus.AccountsTest do
     end
 
     test "returns error with invalid username" do
-      attrs = %{username: "ab"}  # Too short
+      # Too short
+      attrs = %{username: "ab"}
 
       assert {:error, changeset} = Accounts.create_guest_user(attrs)
       assert "should be at least 3 character(s)" in errors_on(changeset).username
@@ -72,6 +73,7 @@ defmodule SudokuVersus.AccountsTest do
   describe "find_or_create_oauth_user/2" do
     test "creates a new OAuth user" do
       provider = "google"
+
       profile = %{
         "id" => "google_12345",
         "email" => "oauth@example.com",
@@ -87,6 +89,7 @@ defmodule SudokuVersus.AccountsTest do
 
     test "finds existing OAuth user" do
       provider = "github"
+
       profile = %{
         "id" => "github_67890",
         "login" => "github_user",
@@ -115,28 +118,34 @@ defmodule SudokuVersus.AccountsTest do
 
   describe "authenticate_user/2" do
     test "authenticates user with correct credentials" do
-      {:ok, user} = Accounts.register_user(%{
-        username: "auth_test",
-        email: "auth@example.com",
-        password: "SecurePass123"
-      })
+      {:ok, user} =
+        Accounts.register_user(%{
+          username: "auth_test",
+          email: "auth@example.com",
+          password: "SecurePass123"
+        })
 
-      assert {:ok, authenticated_user} = Accounts.authenticate_user("auth@example.com", "SecurePass123")
+      assert {:ok, authenticated_user} =
+               Accounts.authenticate_user("auth@example.com", "SecurePass123")
+
       assert authenticated_user.id == user.id
     end
 
     test "returns error with incorrect password" do
-      {:ok, _user} = Accounts.register_user(%{
-        username: "auth_test2",
-        email: "auth2@example.com",
-        password: "SecurePass123"
-      })
+      {:ok, _user} =
+        Accounts.register_user(%{
+          username: "auth_test2",
+          email: "auth2@example.com",
+          password: "SecurePass123"
+        })
 
-      assert {:error, :invalid_credentials} = Accounts.authenticate_user("auth2@example.com", "WrongPassword")
+      assert {:error, :invalid_credentials} =
+               Accounts.authenticate_user("auth2@example.com", "WrongPassword")
     end
 
     test "returns error when user does not exist" do
-      assert {:error, :invalid_credentials} = Accounts.authenticate_user("nonexistent@example.com", "password")
+      assert {:error, :invalid_credentials} =
+               Accounts.authenticate_user("nonexistent@example.com", "password")
     end
   end
 end

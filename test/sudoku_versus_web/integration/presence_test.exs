@@ -16,11 +16,13 @@ defmodule SudokuVersusWeb.Integration.PresenceTest do
   test "presence count increases when player joins room", _context do
     {:ok, player} = Accounts.create_guest_user(%{username: "presence_joiner"})
     {:ok, puzzle} = Games.create_puzzle(:medium)
-    {:ok, room} = Games.create_game_room(%{
-      name: "Presence Test Room",
-      creator_id: player.id,
-      puzzle_id: puzzle.id
-    })
+
+    {:ok, room} =
+      Games.create_game_room(%{
+        name: "Presence Test Room",
+        creator_id: player.id,
+        puzzle_id: puzzle.id
+      })
 
     # Initially, no one is in the room
     topic = "game_room:#{room.id}"
@@ -45,11 +47,13 @@ defmodule SudokuVersusWeb.Integration.PresenceTest do
   test "presence count decreases when player leaves room", _context do
     {:ok, player} = Accounts.create_guest_user(%{username: "presence_leaver"})
     {:ok, puzzle} = Games.create_puzzle(:easy)
-    {:ok, room} = Games.create_game_room(%{
-      name: "Leave Test Room",
-      creator_id: player.id,
-      puzzle_id: puzzle.id
-    })
+
+    {:ok, room} =
+      Games.create_game_room(%{
+        name: "Leave Test Room",
+        creator_id: player.id,
+        puzzle_id: puzzle.id
+      })
 
     topic = "game_room:#{room.id}"
 
@@ -79,11 +83,13 @@ defmodule SudokuVersusWeb.Integration.PresenceTest do
     {:ok, player3} = Accounts.create_guest_user(%{username: "multi_player_3"})
 
     {:ok, puzzle} = Games.create_puzzle(:hard)
-    {:ok, room} = Games.create_game_room(%{
-      name: "Multi Player Room",
-      creator_id: player1.id,
-      puzzle_id: puzzle.id
-    })
+
+    {:ok, room} =
+      Games.create_game_room(%{
+        name: "Multi Player Room",
+        creator_id: player1.id,
+        puzzle_id: puzzle.id
+      })
 
     topic = "game_room:#{room.id}"
 
@@ -124,11 +130,13 @@ defmodule SudokuVersusWeb.Integration.PresenceTest do
     {:ok, player_b} = Accounts.create_guest_user(%{username: "diff_player_b"})
 
     {:ok, puzzle} = Games.create_puzzle(:expert)
-    {:ok, room} = Games.create_game_room(%{
-      name: "Diff Test Room",
-      creator_id: player_a.id,
-      puzzle_id: puzzle.id
-    })
+
+    {:ok, room} =
+      Games.create_game_room(%{
+        name: "Diff Test Room",
+        creator_id: player_a.id,
+        puzzle_id: puzzle.id
+      })
 
     # Player A joins first
     conn_a = build_conn() |> Plug.Test.init_test_session(user_id: player_a.id)
@@ -150,11 +158,13 @@ defmodule SudokuVersusWeb.Integration.PresenceTest do
   test "presence metadata includes player information", _context do
     {:ok, player} = Accounts.create_guest_user(%{username: "metadata_player"})
     {:ok, puzzle} = Games.create_puzzle(:medium)
-    {:ok, room} = Games.create_game_room(%{
-      name: "Metadata Room",
-      creator_id: player.id,
-      puzzle_id: puzzle.id
-    })
+
+    {:ok, room} =
+      Games.create_game_room(%{
+        name: "Metadata Room",
+        creator_id: player.id,
+        puzzle_id: puzzle.id
+      })
 
     topic = "game_room:#{room.id}"
 
@@ -180,11 +190,13 @@ defmodule SudokuVersusWeb.Integration.PresenceTest do
   test "presence handles player reconnection", _context do
     {:ok, player} = Accounts.create_guest_user(%{username: "reconnect_player"})
     {:ok, puzzle} = Games.create_puzzle(:easy)
-    {:ok, room} = Games.create_game_room(%{
-      name: "Reconnect Room",
-      creator_id: player.id,
-      puzzle_id: puzzle.id
-    })
+
+    {:ok, room} =
+      Games.create_game_room(%{
+        name: "Reconnect Room",
+        creator_id: player.id,
+        puzzle_id: puzzle.id
+      })
 
     topic = "game_room:#{room.id}"
 

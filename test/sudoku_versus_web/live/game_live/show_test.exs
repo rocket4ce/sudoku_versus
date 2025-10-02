@@ -9,11 +9,14 @@ defmodule SudokuVersusWeb.GameLive.ShowTest do
       {:ok, creator} = Accounts.create_guest_user(%{username: "game_host"})
       {:ok, player} = Accounts.create_guest_user(%{username: "game_player"})
       {:ok, puzzle} = Games.create_puzzle(:medium)
-      {:ok, room} = Games.create_game_room(%{
-        name: "Game Room",
-        creator_id: creator.id,
-        puzzle_id: puzzle.id
-      })
+
+      {:ok, room} =
+        Games.create_game_room(%{
+          name: "Game Room",
+          creator_id: creator.id,
+          puzzle_id: puzzle.id
+        })
+
       {:ok, _session} = Games.join_room(room.id, player.id)
 
       %{room: room, player: player, puzzle: puzzle}
@@ -73,11 +76,14 @@ defmodule SudokuVersusWeb.GameLive.ShowTest do
       {:ok, player} = Accounts.create_guest_user(%{username: "move_submitter"})
       {:ok, creator} = Accounts.create_guest_user(%{username: "room_owner"})
       {:ok, puzzle} = Games.create_puzzle(:easy)
-      {:ok, room} = Games.create_game_room(%{
-        name: "Move Test Room",
-        creator_id: creator.id,
-        puzzle_id: puzzle.id
-      })
+
+      {:ok, room} =
+        Games.create_game_room(%{
+          name: "Move Test Room",
+          creator_id: creator.id,
+          puzzle_id: puzzle.id
+        })
+
       {:ok, session} = Games.join_room(room.id, player.id)
 
       conn = build_conn() |> Plug.Test.init_test_session(user_id: player.id)
@@ -128,11 +134,14 @@ defmodule SudokuVersusWeb.GameLive.ShowTest do
       {:ok, player1} = Accounts.create_guest_user(%{username: "player_one"})
       {:ok, player2} = Accounts.create_guest_user(%{username: "player_two"})
       {:ok, puzzle} = Games.create_puzzle(:medium)
-      {:ok, room} = Games.create_game_room(%{
-        name: "Multiplayer Room",
-        creator_id: player1.id,
-        puzzle_id: puzzle.id
-      })
+
+      {:ok, room} =
+        Games.create_game_room(%{
+          name: "Multiplayer Room",
+          creator_id: player1.id,
+          puzzle_id: puzzle.id
+        })
+
       {:ok, _session1} = Games.join_room(room.id, player1.id)
       {:ok, _session2} = Games.join_room(room.id, player2.id)
 
@@ -167,11 +176,14 @@ defmodule SudokuVersusWeb.GameLive.ShowTest do
       {:ok, player} = Accounts.create_guest_user(%{username: "presence_player"})
       {:ok, creator} = Accounts.create_guest_user(%{username: "presence_creator"})
       {:ok, puzzle} = Games.create_puzzle(:hard)
-      {:ok, room} = Games.create_game_room(%{
-        name: "Presence Room",
-        creator_id: creator.id,
-        puzzle_id: puzzle.id
-      })
+
+      {:ok, room} =
+        Games.create_game_room(%{
+          name: "Presence Room",
+          creator_id: creator.id,
+          puzzle_id: puzzle.id
+        })
+
       {:ok, _session} = Games.join_room(room.id, player.id)
 
       conn = build_conn() |> Plug.Test.init_test_session(user_id: player.id)
