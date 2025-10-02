@@ -4,6 +4,57 @@ This is a web application written using the Phoenix web framework.
 
 - Use `mix precommit` alias when you are done with all changes and fix any pending issues
 - Use the already included and available `:req` (`Req`) library for HTTP requests, **avoid** `:httpoison`, `:tesla`, and `:httpc`. Req is included by default and is the preferred HTTP client for Phoenix apps
+
+### MMO Sudoku Feature Guidelines (002-mmo-sudoku-multiplayer)
+
+#### Real-Time Communication Patterns
+- **Always** use Phoenix.PubSub with per-room topics: `"game_room:#{room_id}"`
+- **Always** subscribe to PubSub in `mount/3` when `connected?(socket)` is true
+- **Never** broadcast full structs via PubSub; send IDs only and fetch full data if needed
+- Use Phoenix.Presence for player tracking per room with automatic cleanup on disconnect
+
+#### LiveView Streams Usage
+- **Always** use streams for: move history, player lists, room lists (unbounded/large collections)
+- **Never** use streams for: game board grid (fixed 81 cells use regular assigns)
+- When using streams in templates: set `phx-update="stream"` on parent, use `id={id}` on children
+- Track empty states separately (streams don't support counting): `@rooms_count`, `@players_online_count`
+
+#### Puzzle Generation & Validation
+- Cache generated puzzles in database (generation takes 10-50ms, acceptable)
+- Store puzzles as JSON arrays: `[[1,2,nil,...],[...],...]` with solution alongside
+- Cache puzzle solutions as maps for O(1) validation: `%{index => value}`
+- Validate moves server-side always, never trust client
+
+#### Scoring & Performance
+- Calculate scores immediately on each move submission (<1ms compute time)
+- Store cumulative score in `player_sessions.current_score`, update per move
+- Broadcast score updates via PubSub to all room participants
+- Leaderboard ranking updates batched every 60 seconds via GenServer (not real-time per move)
+
+#### Database Schema Patterns
+- Use binary_id for all primary keys and foreign keys: `@primary_key {:id, :binary_id, autogenerate: true}`
+- Always preload associations before accessing in LiveView templates
+- Use Ecto enums for status fields: `field :status, Ecto.Enum, values: [:active, :completed, :archived]`
+- Index foreign keys and commonly queried fields (status, inserted_at, player_id)
+
+#### Authentication
+- Support three auth modes: guest (username only), registered (email/password), OAuth (Google/GitHub)
+- Use custom OAuth implementation with Req library (no Ueberauth dependency)
+- Store OAuth provider metadata in users table: `oauth_provider`, `oauth_provider_id`
+- Don't persist OAuth access tokens; request new token on each auth flow
+
+#### Auto-Scaling Considerations
+- Store all game state in PostgreSQL (not in-memory process state)
+- Phoenix.PubSub and Phoenix.Presence work across distributed nodes automatically
+- No sticky sessions required; any node can handle any request
+- Use database connection pooling (Ecto default: pool_size 10)
+
+#### Testing Patterns
+- Use `Phoenix.LiveViewTest` for LiveView tests, never test raw HTML
+- Reference key element IDs in tests: `assert has_element?(view, "#my-form")`
+- Use `LazyHTML` for selective HTML inspection when debugging
+- Mock OAuth responses with `Req.Test` for controller tests
+- Test real-time updates by simulating multiple connected clients
 ### Phoenix v1.8 guidelines
 
 - **Always** begin your LiveView templates with `<Layouts.app flash={@flash} ...>` which wraps all inner content
