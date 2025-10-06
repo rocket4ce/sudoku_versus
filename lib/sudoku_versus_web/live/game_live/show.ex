@@ -348,6 +348,10 @@ defmodule SudokuVersusWeb.GameLive.Show do
 
   defp box_size_for_grid(9), do: 3
   defp box_size_for_grid(16), do: 4
+  defp box_size_for_grid(25), do: 5
+  defp box_size_for_grid(36), do: 6
+  defp box_size_for_grid(49), do: 7
+  defp box_size_for_grid(100), do: 10
 
   @doc """
   Converts numeric values to hexadecimal representation for 16x16 Sudoku.
